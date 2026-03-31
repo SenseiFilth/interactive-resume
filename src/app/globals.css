@@ -1,26 +1,111 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── Custom Font Faces ── */
+@font-face {
+  font-family: "CloisterBlack";
+  src: url("/fonts/CloisterBlack.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "PrimeDrips";
+  src: url("/fonts/PrimeDrips.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "RushZone";
+  src: url("/fonts/RushZone.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ryga";
+  src: url("/fonts/Ryga.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "CounterStrike";
+  src: url("/fonts/CounterStrike.ttf") format("truetype");
+  font-display: swap;
 }
 
+/* ── Theme ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-crimson: #DC143C;
+  --color-blood: #8B0000;
+  --color-smoke: #1a1a1a;
+  --color-ash: #2a2a2a;
+  --color-steel: #888888;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #000000;
+  color: #ffffff;
+  font-family: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── Display / heading font ── */
+.font-display {
+  font-family: "CounterStrike", sans-serif;
+}
+
+/* ── Art Font Classes (hero scroll only) ── */
+.font-cloister { font-family: "CloisterBlack", serif; }
+.font-drips { font-family: "PrimeDrips", sans-serif; }
+.font-rush { font-family: "RushZone", sans-serif; }
+.font-ryga { font-family: "Ryga", sans-serif; }
+.font-strike { font-family: "CounterStrike", sans-serif; }
+
+/* ── Red Pulse — subtle, controlled ── */
+@keyframes redPulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(220, 20, 60, 0.15); }
+  50% { text-shadow: 0 0 24px rgba(220, 20, 60, 0.3); }
+}
+
+.red-pulse {
+  animation: redPulse 5s ease-in-out infinite;
+}
+
+/* ── Glitch — controlled, not chaotic ── */
+@keyframes glitch {
+  0%, 85%, 100% { transform: translate(0); }
+  88% { transform: translate(-1px, 1px); }
+  91% { transform: translate(1px, -1px); }
+  94% { transform: translate(-1px, 0); }
+}
+
+@keyframes glitchColor {
+  0%, 85%, 100% { text-shadow: none; }
+  88% { text-shadow: 1px 0 #DC143C, -1px 0 rgba(0, 255, 255, 0.3); }
+  94% { text-shadow: -1px 0 #DC143C, 1px 0 rgba(0, 255, 255, 0.3); }
+}
+
+.glitch-text {
+  animation: glitch 4s ease-in-out infinite, glitchColor 4s ease-in-out infinite;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #DC143C;
+  border-radius: 2px;
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(220, 20, 60, 0.3);
+  color: #fff;
 }
