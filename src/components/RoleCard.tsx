@@ -74,8 +74,8 @@ export default function RoleCard({
 
           <div className="px-7 pt-7 pb-6 sm:px-9 sm:pt-8 sm:pb-7">
             {/* ── Header row ── */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-6">
-              <div className="min-w-0 flex-1 text-center sm:text-left">
+            <div className="flex flex-col items-center gap-2">
+              <div className="min-w-0 flex-1 text-center">
                 {/* Index watermark */}
                 <span
                   className="mb-2 block font-mono text-[10px] tracking-[0.3em] transition-colors duration-300"
@@ -101,47 +101,20 @@ export default function RoleCard({
                   {role.role}
                 </p>
 
-                {/* Timeframe — mobile only, shown below role */}
-                <span className="mt-2 block font-mono text-xs tracking-wider text-white/20 sm:hidden">
+                {/* Timeframe */}
+                <span className="mt-2 block font-mono text-xs tracking-wider text-white/20">
                   {role.timeframe}
                 </span>
-              </div>
-
-              {/* Right: Timeframe + expand indicator — hidden on mobile */}
-              <div className="hidden sm:flex shrink-0 flex-col items-end gap-3 pt-0.5">
-                <span className="hidden sm:block font-mono text-xs tracking-wider text-white/20">
-                  {role.timeframe}
-                </span>
-
-                {/* Expand toggle */}
-                <motion.div
-                  animate={{ rotate: expanded ? 45 : 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="flex h-5 w-5 items-center justify-center self-center sm:self-auto"
-                >
-                  <svg
-                    viewBox="0 0 10 10"
-                    className="h-3 w-3"
-                    style={{ color: expanded ? "rgba(220,20,60,0.7)" : "rgba(255,255,255,0.2)" }}
-                  >
-                    <path
-                      d="M5 1v8M1 5h8"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </motion.div>
               </div>
             </div>
 
             {/* ── Impact line ── */}
-            <p className="mt-5 text-sm leading-relaxed text-white/40 text-center sm:text-left">
+            <p className="mt-5 text-sm leading-relaxed text-white/40 text-center">
               {role.impact}
             </p>
 
             {/* ── Tags ── */}
-            <div className="mt-4 flex flex-wrap gap-1.5 justify-center sm:justify-start">
+            <div className="mt-4 flex flex-wrap gap-1.5 justify-center">
               {role.tags.map((tag) => (
                 <span
                   key={tag}

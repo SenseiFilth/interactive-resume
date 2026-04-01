@@ -24,17 +24,12 @@ export default function ExperienceSection() {
         transition={{ duration: 0.5 }}
         className="relative z-10 mx-auto mb-20 max-w-4xl"
       >
-        <h2 className="text-xs font-mono tracking-[0.5em] text-crimson uppercase text-center sm:text-left">
+        <h2 className="text-xs font-mono tracking-[0.5em] text-crimson uppercase text-center">
           Experience
         </h2>
-        <div className="mt-3 flex items-end justify-between gap-4">
-          <p className="font-display text-3xl font-bold text-white sm:text-4xl text-center sm:text-left w-full sm:w-auto">
-            Roles Played
-          </p>
-          <span className="hidden font-mono text-[10px] tracking-widest text-white/15 sm:block">
-            Click any card to expand
-          </span>
-        </div>
+        <p className="mt-3 text-3xl font-bold text-white sm:text-4xl text-center">
+          Roles Played
+        </p>
       </motion.div>
 
       {/* Cards — vertical flow with breathing room */}

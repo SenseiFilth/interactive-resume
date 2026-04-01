@@ -25,10 +25,10 @@ export default function ProjectCard({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(220,20,60,0.06)_0%,_transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative px-7 pt-7 pb-6 sm:px-8 sm:pt-8 sm:pb-7">
-        <h3 className="text-2xl font-bold tracking-tight text-white text-center sm:text-left">
+        <h3 className="text-2xl font-bold tracking-tight text-white text-center">
           {project.name}
         </h3>
-        <p className="mt-1.5 text-sm text-crimson/50 text-center sm:text-left">{project.tagline}</p>
+        <p className="mt-1.5 text-sm text-crimson/50 text-center">{project.tagline}</p>
 
         <div className="mt-5 flex flex-col gap-0">
           {project.impacts.map((feature, i) => (

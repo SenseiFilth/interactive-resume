@@ -78,19 +78,6 @@ export const signalBlocks: SignalBlock[] = [
 
 export const roles: Role[] = [
   {
-    id: "baucoms",
-    role: "Shipping & Physical Logistics",
-    organization: "Baucom's Nursery",
-    timeframe: "2018–2019",
-    impact: "Built operational discipline through high-volume physical systems under demanding conditions.",
-    tags: ["Logistics", "Operations", "Physical Systems"],
-    details: [
-      "Managed inbound shipping containers and inventory staging",
-      "Operated under tight seasonal deadlines with zero tolerance for delays",
-      "Developed systems-level thinking through repetition and high-volume output",
-    ],
-  },
-  {
     id: "local322",
     role: "Stagehand & Crew Lead",
     organization: "IATSE Local 322",
@@ -101,6 +88,19 @@ export const roles: Role[] = [
       "Executed large-scale events across arena, theater, and convention environments",
       "Led crew call coordination and real-time problem solving under live show pressure",
       "Operated and maintained lighting systems, audio rigs, and video infrastructure",
+    ],
+  },
+  {
+    id: "aether",
+    role: "AI Model Evaluator",
+    organization: "Aether AI Project",
+    timeframe: "2024–2025",
+    impact: "Trained and evaluated large language models. Improved AI reasoning, response quality, and multimodal outputs.",
+    tags: ["LLM Evaluation", "AI Training", "Computer Vision", "RLHF"],
+    details: [
+      "Evaluated model outputs for reasoning accuracy, tone, and instruction-following",
+      "Provided structured feedback used to improve multimodal and code generation tasks",
+      "Performed computer vision validation across image-text alignment tasks",
     ],
   },
   {
@@ -117,16 +117,16 @@ export const roles: Role[] = [
     ],
   },
   {
-    id: "aether",
-    role: "AI Model Evaluator",
-    organization: "Aether AI Project",
-    timeframe: "2024–2025",
-    impact: "Trained and evaluated large language models. Improved AI reasoning, response quality, and multimodal outputs.",
-    tags: ["LLM Evaluation", "AI Training", "Computer Vision", "RLHF"],
+    id: "baucoms",
+    role: "Shipping & Physical Logistics",
+    organization: "Baucom's Nursery",
+    timeframe: "2018–2019",
+    impact: "Built operational discipline through high-volume physical systems under demanding conditions.",
+    tags: ["Logistics", "Operations", "Physical Systems"],
     details: [
-      "Evaluated model outputs for reasoning accuracy, tone, and instruction-following",
-      "Provided structured feedback used to improve multimodal and code generation tasks",
-      "Performed computer vision validation across image-text alignment tasks",
+      "Managed inbound shipping containers and inventory staging",
+      "Operated under tight seasonal deadlines with zero tolerance for delays",
+      "Developed systems-level thinking through repetition and high-volume output",
     ],
   },
 ];

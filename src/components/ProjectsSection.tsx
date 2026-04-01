@@ -17,7 +17,7 @@ export default function ProjectsSection() {
         <h2 className="text-xs font-mono tracking-[0.5em] text-crimson uppercase">
           Projects
         </h2>
-        <p className="font-display mt-3 text-3xl font-bold text-white sm:text-4xl">
+        <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
           Systems Built
         </p>
       </motion.div>

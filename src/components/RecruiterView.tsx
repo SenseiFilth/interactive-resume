@@ -5,7 +5,7 @@ export default function RecruiterView() {
     <div className="min-h-screen bg-black px-6 py-20">
       <div className="mx-auto max-w-3xl">
         {/* Header — centered on mobile */}
-        <div className="border-b border-ash pb-8 text-center sm:text-left">
+        <div className="border-b border-ash pb-8 text-center">
           <h1 className="text-4xl font-bold text-white">Alexander McKinnon-Brown</h1>
           <p className="mt-2 text-sm text-steel">
             Live Production &bull; Full-Stack Developer &bull; AI Consultant
@@ -13,11 +13,11 @@ export default function RecruiterView() {
         </div>
 
         {/* Technical Stack — centered */}
-        <div className="mt-10 text-center sm:text-left">
+        <div className="mt-10 text-center">
           <h2 className="text-xs font-mono tracking-[0.3em] text-crimson uppercase">
             Technical Stack
           </h2>
-          <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
+          <div className="mt-4 flex flex-wrap gap-2 justify-center">
             {techStack.map((tech) => (
               <span
                 key={tech}

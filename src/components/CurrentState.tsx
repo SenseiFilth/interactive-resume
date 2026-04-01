@@ -37,7 +37,7 @@ export default function CurrentState() {
           Current State
         </motion.p>
 
-        {/* Heading with parallax depth */}
+        {/* Heading with parallax depth — 3 lines on all screens */}
         <motion.h2
           style={{ y: headingY }}
           initial={{ opacity: 0, y: 16 }}
@@ -46,16 +46,9 @@ export default function CurrentState() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mt-8 font-bold leading-tight tracking-[0.04em] text-white"
         >
-          {/* Mobile (portrait): 3 lines */}
-          <span className="block sm:hidden">
-            <span className="font-display block text-3xl">Building Digital</span>
-            <span className="block text-3xl font-bold text-white/50 my-1">+</span>
-            <span className="font-display block text-3xl">Physical Systems</span>
-          </span>
-          {/* Desktop: single flow */}
-          <span className="hidden sm:inline font-display text-4xl md:text-5xl">
-            Building Digital + Physical Systems
-          </span>
+          <span className="block text-3xl sm:text-4xl md:text-5xl">Building Digital</span>
+          <span className="block text-2xl sm:text-3xl md:text-4xl font-bold text-white/40 my-1">+</span>
+          <span className="block text-3xl sm:text-4xl md:text-5xl">Physical Systems</span>
         </motion.h2>
 
         {/* Subtitle with parallax — matching hero subtitle style */}
