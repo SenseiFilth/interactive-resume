@@ -43,6 +43,13 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Global footer */}
+      <footer className="border-t border-white/[0.04] py-12 text-center">
+        <p className="font-mono text-[10px] tracking-widest text-steel/30 uppercase">
+          &ldquo;Inside, I am infinite&rdquo; &mdash; Miyamoto Musashi
+        </p>
+      </footer>
     </>
   );
 }

@@ -52,6 +52,7 @@ export default function HeroSection({
   );
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
+  const lastFontChangeRef = useRef(0);
   // Ref so scroll handler always sees latest viewMode without re-registering
   const viewModeRef = useRef(viewMode);
   useEffect(() => { viewModeRef.current = viewMode; }, [viewMode]);
@@ -69,17 +70,22 @@ export default function HeroSection({
     // Disabled in recruiter mode — prevents toggle interference
     if (viewModeRef.current === "recruiter") return;
 
-    // Throttle via rAF to prevent excessive re-renders
+    // Throttle: minimum 180ms between font changes — balanced speed
+    const now = Date.now();
+    if (now - lastFontChangeRef.current < 180) return;
+
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
+      lastFontChangeRef.current = Date.now();
       setLetterFonts(getRandomFonts(LETTERS.length));
       rafRef.current = null;
     });
 
     if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    // Hold art fonts for 650ms before resetting to base
     scrollTimeoutRef.current = setTimeout(() => {
       setLetterFonts(LETTERS.map(() => BASE_FONT));
-    }, 350);
+    }, 650);
   }, []);
 
   useEffect(() => {
@@ -134,9 +140,9 @@ export default function HeroSection({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-6 text-sm tracking-[0.4em] text-steel uppercase"
+          className="mt-6 text-[8px] tracking-[0.2em] text-steel uppercase text-center sm:text-sm sm:tracking-[0.4em]"
         >
-          Curiosity &rarr; Adaptation &rarr; Systems &rarr; Builder
+          Curiosity &rarr; Adaptation &rarr; Execution
         </motion.p>
 
         {/* Toggle */}

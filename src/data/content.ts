@@ -154,7 +154,7 @@ export const projects: Project[] = [
   },
   {
     id: "portal",
-    name: "Dynamic Portal",
+    name: "Client Acquisition Portals",
     tagline: "Premium interactive acquisition platform",
     impacts: [
       "Interactive client acquisition system",
@@ -174,8 +174,6 @@ export const techStack = [
   "Node.js",
   "Python",
   "Framer Motion",
-  "Stripe API",
-  "Claude API",
   "Vercel",
   "Git",
   "Figma",

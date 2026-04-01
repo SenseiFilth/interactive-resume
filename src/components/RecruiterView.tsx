@@ -4,35 +4,20 @@ export default function RecruiterView() {
   return (
     <div className="min-h-screen bg-black px-6 py-20">
       <div className="mx-auto max-w-3xl">
-        {/* Header */}
-        <div className="border-b border-ash pb-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold text-white">Alexander McKinnon-Brown</h1>
-              <p className="mt-2 text-sm text-steel">
-                Full-Stack Developer &middot; Systems Thinker &middot; Production
-                Technologist
-              </p>
-            </div>
-            <a
-              href="/resume.pdf"
-              download="Alexander_McKinnon-Brown_Resume.pdf"
-              className="shrink-0 inline-flex items-center gap-2 border border-crimson/50 bg-crimson/10 px-4 py-2 text-xs font-medium tracking-widest text-white uppercase transition-all duration-200 hover:border-crimson hover:bg-crimson/20"
-            >
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Resume PDF
-            </a>
-          </div>
+        {/* Header — centered on mobile */}
+        <div className="border-b border-ash pb-8 text-center sm:text-left">
+          <h1 className="text-4xl font-bold text-white">Alexander McKinnon-Brown</h1>
+          <p className="mt-2 text-sm text-steel">
+            Live Production &bull; Full-Stack Developer &bull; AI Consultant
+          </p>
         </div>
 
-        {/* Tech Stack */}
-        <div className="mt-10">
+        {/* Technical Stack — centered */}
+        <div className="mt-10 text-center sm:text-left">
           <h2 className="text-xs font-mono tracking-[0.3em] text-crimson uppercase">
-            Tech Stack
+            Technical Stack
           </h2>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
             {techStack.map((tech) => (
               <span
                 key={tech}
@@ -94,10 +79,18 @@ export default function RecruiterView() {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-16 border-t border-ash pt-6 text-center text-xs text-steel/50">
-          Operating at the intersection of software, design, systems, and
-          business.
+        {/* Resume PDF — centered below projects */}
+        <div className="mt-10 flex justify-center">
+          <a
+            href="/resume.pdf"
+            download="Alexander_McKinnon-Brown_Resume.pdf"
+            className="inline-flex items-center gap-2 border border-crimson/50 bg-crimson/10 px-6 py-3 text-xs font-medium tracking-widest text-white uppercase transition-all duration-200 hover:border-crimson hover:bg-crimson/20"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Resume PDF
+          </a>
         </div>
       </div>
     </div>

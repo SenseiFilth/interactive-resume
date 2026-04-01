@@ -74,8 +74,8 @@ export default function RoleCard({
 
           <div className="px-7 pt-7 pb-6 sm:px-9 sm:pt-8 sm:pb-7">
             {/* ── Header row ── */}
-            <div className="flex items-start justify-between gap-6">
-              <div className="min-w-0 flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-6">
+              <div className="min-w-0 flex-1 text-center sm:text-left">
                 {/* Index watermark */}
                 <span
                   className="mb-2 block font-mono text-[10px] tracking-[0.3em] transition-colors duration-300"
@@ -100,11 +100,16 @@ export default function RoleCard({
                 >
                   {role.role}
                 </p>
+
+                {/* Timeframe — mobile only, shown below role */}
+                <span className="mt-2 block font-mono text-xs tracking-wider text-white/20 sm:hidden">
+                  {role.timeframe}
+                </span>
               </div>
 
-              {/* Right: Timeframe + expand indicator */}
-              <div className="flex shrink-0 flex-col items-end gap-3 pt-0.5">
-                <span className="font-mono text-xs tracking-wider text-white/20">
+              {/* Right: Timeframe + expand indicator — hidden on mobile */}
+              <div className="hidden sm:flex shrink-0 flex-col items-end gap-3 pt-0.5">
+                <span className="hidden sm:block font-mono text-xs tracking-wider text-white/20">
                   {role.timeframe}
                 </span>
 
@@ -112,7 +117,7 @@ export default function RoleCard({
                 <motion.div
                   animate={{ rotate: expanded ? 45 : 0 }}
                   transition={{ duration: 0.25 }}
-                  className="flex h-5 w-5 items-center justify-center"
+                  className="flex h-5 w-5 items-center justify-center self-center sm:self-auto"
                 >
                   <svg
                     viewBox="0 0 10 10"
@@ -131,12 +136,12 @@ export default function RoleCard({
             </div>
 
             {/* ── Impact line ── */}
-            <p className="mt-5 text-sm leading-relaxed text-white/40">
+            <p className="mt-5 text-sm leading-relaxed text-white/40 text-center sm:text-left">
               {role.impact}
             </p>
 
             {/* ── Tags ── */}
-            <div className="mt-4 flex flex-wrap gap-1.5">
+            <div className="mt-4 flex flex-wrap gap-1.5 justify-center sm:justify-start">
               {role.tags.map((tag) => (
                 <span
                   key={tag}

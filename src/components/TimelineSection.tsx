@@ -1,457 +1,528 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useMemo, useCallback } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+} from "framer-motion";
 import { signalBlocks } from "@/data/content";
-import type { SignalBlock } from "@/data/content";
 
-/* ══════════════════════════════════════════
-   CONSTELLATION LAYOUT
-   Primary node positions (% based)
-   ══════════════════════════════════════════ */
-const NODE_LAYOUT = [
-  { x: 15, y: 12 },
-  { x: 62, y: 28 },
-  { x: 22, y: 52 },
-  { x: 58, y: 72 },
-];
-
-/* ══════════════════════════════════════════
-   FAUX / SECONDARY STAR NODES
-   Three tiers: micro, small, medium
-   Distributed asymmetrically for cosmic feel
-   ══════════════════════════════════════════ */
-interface FauxStar {
+/* ══════════════════════════════════════════════════════════════════
+   STAR FIELD — 3 depth layers, 174 total
+   near: bright + animated twinkle
+   mid:  medium glow, static
+   far:  tiny + very dim, dense
+   ══════════════════════════════════════════════════════════════════ */
+interface Star {
+  id: number;
   x: number;
   y: number;
-  size: "micro" | "small" | "medium";
+  size: number;
+  opacity: number;
+  dur: number;
   delay: number;
-  duration: number;
 }
 
-const FAUX_STARS: FauxStar[] = [
-  // Micro tier — barely visible twinkles
-  { x: 8, y: 6, size: "micro", delay: 0, duration: 4.2 },
-  { x: 35, y: 8, size: "micro", delay: 1.3, duration: 5.1 },
-  { x: 78, y: 15, size: "micro", delay: 0.7, duration: 3.8 },
-  { x: 45, y: 20, size: "micro", delay: 2.1, duration: 4.5 },
-  { x: 88, y: 35, size: "micro", delay: 0.3, duration: 5.8 },
-  { x: 5, y: 42, size: "micro", delay: 1.8, duration: 4.0 },
-  { x: 72, y: 48, size: "micro", delay: 0.5, duration: 3.5 },
-  { x: 40, y: 58, size: "micro", delay: 2.4, duration: 4.8 },
-  { x: 85, y: 62, size: "micro", delay: 1.0, duration: 5.3 },
-  { x: 12, y: 68, size: "micro", delay: 0.8, duration: 4.1 },
-  { x: 92, y: 78, size: "micro", delay: 1.5, duration: 3.9 },
-  { x: 30, y: 82, size: "micro", delay: 2.0, duration: 5.5 },
-  { x: 68, y: 88, size: "micro", delay: 0.2, duration: 4.4 },
-  { x: 50, y: 92, size: "micro", delay: 1.7, duration: 3.6 },
-  // Small tier — soft glow dots
-  { x: 42, y: 14, size: "small", delay: 0.9, duration: 6.2 },
-  { x: 80, y: 25, size: "small", delay: 1.6, duration: 5.0 },
-  { x: 10, y: 32, size: "small", delay: 0.4, duration: 7.1 },
-  { x: 50, y: 42, size: "small", delay: 2.3, duration: 5.5 },
-  { x: 75, y: 55, size: "small", delay: 0.6, duration: 6.8 },
-  { x: 35, y: 70, size: "small", delay: 1.2, duration: 5.9 },
-  { x: 82, y: 80, size: "small", delay: 1.9, duration: 6.4 },
-  { x: 18, y: 85, size: "small", delay: 0.1, duration: 7.3 },
-  // Medium tier — semi-visible anchors
-  { x: 38, y: 35, size: "medium", delay: 1.4, duration: 8.0 },
-  { x: 70, y: 40, size: "medium", delay: 0.8, duration: 7.5 },
-  { x: 45, y: 62, size: "medium", delay: 2.2, duration: 6.5 },
-  { x: 8, y: 55, size: "medium", delay: 1.1, duration: 7.8 },
-  { x: 90, y: 50, size: "medium", delay: 0.3, duration: 8.2 },
-];
-
-const STAR_SIZES = {
-  micro: { w: 1, glow: 0 },
-  small: { w: 1.5, glow: 2 },
-  medium: { w: 2, glow: 4 },
-};
-
-/* ══════════════════════════════════════════
-   BACKGROUND STARFIELD
-   Very faint, random, slow drift
-   ══════════════════════════════════════════ */
-function useStarfield(count: number) {
+function useStarLayers() {
   return useMemo(() => {
-    const stars = [];
-    for (let i = 0; i < count; i++) {
-      stars.push({
+    let id = 0;
+    function make(
+      count: number,
+      minSz: number,
+      maxSz: number,
+      minOp: number,
+      maxOp: number,
+      minDur: number,
+      maxDur: number
+    ): Star[] {
+      return Array.from({ length: count }, () => ({
+        id: id++,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        opacity: 0.08 + Math.random() * 0.18,
-        size: 0.5 + Math.random() * 0.8,
-        drift: (Math.random() - 0.5) * 8,
-      });
+        size: minSz + Math.random() * (maxSz - minSz),
+        opacity: minOp + Math.random() * (maxOp - minOp),
+        dur: minDur + Math.random() * (maxDur - minDur),
+        delay: Math.random() * 5,
+      }));
     }
-    return stars;
-  }, [count]);
+    return {
+      near: make(24, 1.8, 3.5,  0.55, 1.00, 3,  6),
+      mid:  make(58, 0.9, 2.0,  0.22, 0.52, 6,  10),
+      far:  make(92, 0.3, 0.9,  0.05, 0.18, 10, 16),
+    };
+  }, []);
 }
 
-/* ══════════════════════════════════════════
-   SVG CONSTELLATION LINES
-   Bézier curves with gradient + shimmer
-   ══════════════════════════════════════════ */
-function ConstellationLines() {
-  return (
-    <svg
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      preserveAspectRatio="none"
-      viewBox="0 0 100 100"
-    >
-      <defs>
-        {/* Main connection gradient */}
-        <linearGradient id="line-grad-01" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#DC143C" stopOpacity="0.35" />
-          <stop offset="50%" stopColor="#DC143C" stopOpacity="0.12" />
-          <stop offset="100%" stopColor="#DC143C" stopOpacity="0.35" />
-        </linearGradient>
-        <linearGradient id="line-grad-02" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#DC143C" stopOpacity="0.3" />
-          <stop offset="50%" stopColor="#DC143C" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#DC143C" stopOpacity="0.3" />
-        </linearGradient>
-        {/* Shimmer filter */}
-        <filter id="line-glow">
-          <feGaussianBlur stdDeviation="0.3" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+/* ══════════════════════════════════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════════════════════════════════ */
+const NODE_POS = [
+  { x: 26, y: 33 }, // 0 — Built to Deconstruct  (upper left)
+  { x: 68, y: 23 }, // 1 — Creative Systems       (upper right)
+  { x: 23, y: 67 }, // 2 — Real-World Systems     (lower left)
+  { x: 69, y: 70 }, // 3 — Intelligent Systems    (lower right)
+] as const;
 
-      {/* ── Primary connections between main nodes ── */}
-      {NODE_LAYOUT.slice(0, -1).map((from, i) => {
-        const to = NODE_LAYOUT[i + 1];
-        const midX = (from.x + to.x) / 2 + (i % 2 === 0 ? 12 : -12);
-        const midY = (from.y + to.y) / 2;
-        return (
-          <motion.path
-            key={`main-${i}`}
-            d={`M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`}
-            fill="none"
-            stroke={`url(#line-grad-0${(i % 2) + 1})`}
-            strokeWidth="0.15"
-            filter="url(#line-glow)"
-            initial={{ pathLength: 0, opacity: 0 }}
-            whileInView={{ pathLength: 1, opacity: 1 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 1.2, delay: i * 0.3, ease: "easeOut" as const }}
-          />
-        );
-      })}
+// [fromIdx, toIdx, drawStart, drawEnd, isPrimary]
+const LINES: readonly [number, number, number, number, boolean][] = [
+  [0, 1, 0.26, 0.38, true ],
+  [1, 2, 0.51, 0.63, true ],
+  [2, 3, 0.76, 0.88, true ],
+  [0, 2, 0.58, 0.68, false],
+  [1, 3, 0.83, 0.93, false],
+] as const;
 
-      {/* ── Secondary branches to faux medium nodes ── */}
-      {FAUX_STARS.filter((s) => s.size === "medium").map((star, i) => {
-        // Connect to nearest main node
-        let nearest = NODE_LAYOUT[0];
-        let minDist = Infinity;
-        for (const node of NODE_LAYOUT) {
-          const d = Math.hypot(node.x - star.x, node.y - star.y);
-          if (d < minDist) { minDist = d; nearest = node; }
-        }
-        return (
-          <motion.line
-            key={`branch-${i}`}
-            x1={nearest.x}
-            y1={nearest.y}
-            x2={star.x}
-            y2={star.y}
-            stroke="#DC143C"
-            strokeOpacity="0.08"
-            strokeWidth="0.08"
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.6 + i * 0.15 }}
-          />
-        );
-      })}
-
-      {/* ── Faint cross-connections for density ── */}
-      <motion.line
-        x1={NODE_LAYOUT[0].x} y1={NODE_LAYOUT[0].y}
-        x2={NODE_LAYOUT[2].x} y2={NODE_LAYOUT[2].y}
-        stroke="#DC143C" strokeOpacity="0.04" strokeWidth="0.06"
-        initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-        viewport={{ once: true }} transition={{ duration: 1, delay: 1.5 }}
-      />
-      <motion.line
-        x1={NODE_LAYOUT[1].x} y1={NODE_LAYOUT[1].y}
-        x2={NODE_LAYOUT[3].x} y2={NODE_LAYOUT[3].y}
-        stroke="#DC143C" strokeOpacity="0.04" strokeWidth="0.06"
-        initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-        viewport={{ once: true }} transition={{ duration: 1, delay: 1.8 }}
-      />
-    </svg>
-  );
-}
-
-/* ══════════════════════════════════════════
-   FAUX STAR COMPONENT
-   Twinkle with randomized timing
-   ══════════════════════════════════════════ */
-function FauxStarNode({ star }: { star: FauxStar }) {
-  const s = STAR_SIZES[star.size];
-  return (
-    <motion.div
-      className="absolute"
-      style={{
-        left: `${star.x}%`,
-        top: `${star.y}%`,
-        width: s.w,
-        height: s.w,
-      }}
-      animate={{
-        opacity: [0.15, 0.5, 0.15],
-        scale: [1, 1.3, 1],
-      }}
-      transition={{
-        duration: star.duration,
-        repeat: Infinity,
-        delay: star.delay,
-        ease: "easeInOut",
-      }}
-    >
-      <div
-        className="h-full w-full rounded-full bg-white"
-        style={{
-          boxShadow: s.glow > 0
-            ? `0 0 ${s.glow}px rgba(220,20,60,0.3), 0 0 ${s.glow * 2}px rgba(220,20,60,0.1)`
-            : "none",
-        }}
-      />
-    </motion.div>
-  );
-}
-
-/* ══════════════════════════════════════════
-   PRIMARY CONSTELLATION NODE
-   ══════════════════════════════════════════ */
-function ConstellationNode({
-  block,
-  index,
-}: {
-  block: SignalBlock;
-  index: number;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const pos = NODE_LAYOUT[index];
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  // Subtle parallax — nodes move slightly slower than background
-  const y = useTransform(scrollYProgress, [0, 1], [10, -10]);
-
-  // Info panel opens to the right for left nodes, left for right nodes
-  const panelSide = pos.x < 50 ? "left-10" : "right-10";
-  const panelAlign = pos.x < 50 ? "left-0" : "right-0";
-
-  return (
-    <motion.div
-      ref={ref}
-      className="absolute"
-      style={{
-        left: `${pos.x}%`,
-        top: `${pos.y}%`,
-        y,
-        zIndex: 10,
-      }}
-    >
-      <div
-        className="group relative cursor-pointer"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
-        {/* Outer breathing glow */}
-        <motion.div
-          animate={{
-            scale: [1, 2, 1],
-            opacity: [0.12, 0, 0.12],
-          }}
-          transition={{
-            duration: 4 + index * 0.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: index * 0.8,
-          }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(220,20,60,0.4) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* Secondary glow ring */}
-        <motion.div
-          animate={{
-            scale: hovered ? 1.5 : 1,
-            opacity: hovered ? 0.25 : 0.1,
-          }}
-          transition={{ duration: 0.4 }}
-          className="absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border border-crimson/20"
-        />
-
-        {/* Core dot */}
-        <motion.div
-          animate={{
-            scale: hovered ? 1.6 : 1,
-            boxShadow: hovered
-              ? "0 0 16px rgba(220,20,60,0.5), 0 0 32px rgba(220,20,60,0.2)"
-              : "0 0 6px rgba(220,20,60,0.3), 0 0 12px rgba(220,20,60,0.1)",
-          }}
-          transition={{ duration: 0.3 }}
-          className="relative z-10 h-2 w-2 rounded-full bg-crimson"
-        />
-
-        {/* Label — always visible */}
-        <motion.span
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 + index * 0.15, duration: 0.5 }}
-          className={`absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold tracking-wider text-white/40 uppercase ${panelSide}`}
-        >
-          {block.title}
-        </motion.span>
-
-        {/* ── Hover Info Panel ── */}
-        <motion.div
-          initial={false}
-          animate={{
-            opacity: hovered ? 1 : 0,
-            y: hovered ? 0 : 4,
-            scale: hovered ? 1 : 0.97,
-            pointerEvents: hovered ? ("auto" as const) : ("none" as const),
-          }}
-          transition={{ duration: 0.2, ease: "easeOut" as const }}
-          className={`absolute top-6 z-30 w-52 sm:w-60 ${panelAlign}`}
-        >
-          <div
-            className="border border-white/[0.06] px-4 py-4"
-            style={{
-              background: "rgba(0,0,0,0.85)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            <h3
-              className={`text-xs font-bold tracking-wide text-white uppercase ${
-                block.glitch ? "glitch-text" : ""
-              }`}
-            >
-              {block.title}
-            </h3>
-
-            <ul className="mt-2.5 flex flex-col gap-1.5">
-              {block.signals.map((signal, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 text-[11px] leading-snug text-steel"
-                >
-                  <span className="h-[2px] w-[2px] shrink-0 rounded-full bg-crimson/50" />
-                  {signal}
-                </li>
-              ))}
-            </ul>
-
-            {block.detail && (
-              <p className="mt-2.5 border-t border-white/[0.04] pt-2 text-[10px] leading-relaxed text-steel/40">
-                {block.detail}
-              </p>
-            )}
-          </div>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ══════════════════════════════════════════
-   MAIN SECTION
-   ══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   500vh outer container → sticky 100vh viewport
+   scrollYProgress (0→1) drives node/content/line animations directly
+   — no spring lag on core animations for real-time scroll sync
+   A lighter spring is kept only for the camera parallax drift
+   ══════════════════════════════════════════════════════════════════ */
 export default function TimelineSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const starfield = useStarfield(60);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Mouse tracking
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const springMX = useSpring(mouseX, { stiffness: 30, damping: 20 });
+  const springMY = useSpring(mouseY, { stiffness: 30, damping: 20 });
+
+  // Raw scroll progress — used directly for node/line/content so they
+  // are perfectly in sync with the user's scroll position (no lag)
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
+    target: containerRef,
+    offset: ["start start", "end end"],
   });
-  // Background starfield drifts at different rate than nodes
-  const starfieldY = useTransform(scrollYProgress, [0, 1], [0, -20]);
+
+  // Lighter spring ONLY for camera parallax — keeps the scene drift smooth
+  const camSpring = useSpring(scrollYProgress, { stiffness: 150, damping: 35 });
+
+  const stars = useStarLayers();
+
+  // ── Camera drift (scroll) ────────────────────────────────────────────────
+  const camScrollX = useTransform(camSpring, [0, 1], ["-2.5%", "2.5%"]);
+  const camScrollY = useTransform(camSpring, [0, 1], ["0%",    "-2%"  ]);
+
+  // ── Camera drift (mouse) ─────────────────────────────────────────────────
+  const camMouseX = useTransform(springMX, [0, 1], ["-2%",   "2%"   ]);
+  const camMouseY = useTransform(springMY, [0, 1], ["-1.5%", "1.5%" ]);
+
+  // ── Star layer depth parallax ────────────────────────────────────────────
+  const nearY = useTransform(camSpring, [0, 1], ["0%", "-14%"]);
+  const midY  = useTransform(camSpring, [0, 1], ["0%", "-6%" ]);
+  const farY  = useTransform(camSpring, [0, 1], ["0%", "-2%" ]);
+
+  // ── Header fade — disappears as you move into the experience ─────────────
+  // Using scrollYProgress directly = instant response, no lag
+  const headerOp = useTransform(scrollYProgress, [0, 0.04, 0.12], [1, 1, 0]);
+
+  // ── Node visibility: ghost → active → depart ─────────────────────────────
+  // Direct scrollYProgress = perfectly in sync with scroll, no spring lag
+  // Thresholds slightly tightened vs. previous version for snappier feel
+  const n0 = useTransform(scrollYProgress,
+    [0.00, 0.06, 0.17, 0.26, 0.30],
+    [0.12, 1.00, 1.00, 0.30, 0.20]);
+  const n1 = useTransform(scrollYProgress,
+    [0.00, 0.24, 0.32, 0.44, 0.52, 0.55],
+    [0.06, 0.06, 1.00, 1.00, 0.30, 0.20]);
+  const n2 = useTransform(scrollYProgress,
+    [0.00, 0.49, 0.57, 0.69, 0.77, 0.80],
+    [0.03, 0.03, 1.00, 1.00, 0.30, 0.20]);
+  const n3 = useTransform(scrollYProgress,
+    [0.00, 0.74, 0.82, 0.94, 1.00],
+    [0.01, 0.01, 1.00, 1.00, 1.00]);
+
+  // ── Node scale: pop on arrival, settle, shrink on departure ─────────────
+  const s0 = useTransform(scrollYProgress,
+    [0.00, 0.06, 0.15, 0.26, 0.30],
+    [0.45, 1.35, 1.00, 0.78, 0.60]);
+  const s1 = useTransform(scrollYProgress,
+    [0.24, 0.32, 0.41, 0.52, 0.55],
+    [0.45, 1.35, 1.00, 0.78, 0.60]);
+  const s2 = useTransform(scrollYProgress,
+    [0.49, 0.57, 0.66, 0.77, 0.80],
+    [0.45, 1.35, 1.00, 0.78, 0.60]);
+  const s3 = useTransform(scrollYProgress,
+    [0.74, 0.82, 0.91, 1.00],
+    [0.45, 1.35, 1.00, 1.00]);
+
+  // ── Content panel visibility ─────────────────────────────────────────────
+  const c0 = useTransform(scrollYProgress, [0.08, 0.14, 0.23, 0.27], [0, 1, 1, 0]);
+  const c1 = useTransform(scrollYProgress, [0.33, 0.39, 0.48, 0.52], [0, 1, 1, 0]);
+  const c2 = useTransform(scrollYProgress, [0.58, 0.64, 0.73, 0.77], [0, 1, 1, 0]);
+  const c3 = useTransform(scrollYProgress, [0.83, 0.89, 1.00],       [0, 1, 1  ]);
+
+  // ── Constellation line pathLength (draws AFTER node arrives) ────────────
+  const l01 = useTransform(scrollYProgress, [0.26, 0.38], [0, 1]);
+  const l12 = useTransform(scrollYProgress, [0.51, 0.63], [0, 1]);
+  const l23 = useTransform(scrollYProgress, [0.76, 0.88], [0, 1]);
+  const l02 = useTransform(scrollYProgress, [0.58, 0.68], [0, 1]);
+  const l13 = useTransform(scrollYProgress, [0.83, 0.93], [0, 1]);
+  const linePaths = [l01, l12, l23, l02, l13];
+
+  // ── Scroll cue ───────────────────────────────────────────────────────────
+  const scrollCueOp = useTransform(scrollYProgress, [0, 0.04, 0.10], [1, 1, 0]);
+
+  const nodeOpacity = [n0, n1, n2, n3];
+  const nodeScale   = [s0, s1, s2, s3];
+  const contentOp   = [c0, c1, c2, c3];
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      mouseX.set(e.clientX / r.width);
+      mouseY.set(e.clientY / r.height);
+    },
+    [mouseX, mouseY]
+  );
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative overflow-hidden bg-black px-4"
-      style={{ paddingTop: "8rem", paddingBottom: "8rem" }}
-    >
-      {/* Section header */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="relative z-20 mx-auto mb-8 text-center"
+    <div ref={containerRef} className="relative" style={{ height: "500vh" }}>
+
+      {/* Sticky viewport */}
+      <div
+        className="sticky top-0 h-screen overflow-hidden bg-black"
+        onMouseMove={handleMouseMove}
       >
-        <h2 className="text-xs font-mono tracking-[0.5em] text-crimson uppercase">
-          Signal Map
-        </h2>
-        <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-          System Origins
-        </p>
-      </motion.div>
-
-      {/* ── Constellation container ── */}
-      <div className="relative mx-auto" style={{ maxWidth: "72rem", height: "36rem" }}>
-
-        {/* Background starfield layer */}
+        {/* ── Section label — centered, fades out as you traverse ── */}
         <motion.div
-          className="pointer-events-none absolute inset-0"
-          style={{ y: starfieldY }}
+          style={{ opacity: headerOp }}
+          className="pointer-events-none absolute top-8 left-0 right-0 z-30 flex flex-col items-center select-none"
         >
-          {starfield.map((star, i) => (
+          <p className="font-mono text-[10px] tracking-[0.45em] text-crimson/60 uppercase">
+            Signal Map
+          </p>
+          <p className="mt-0.5 font-mono text-[9px] tracking-[0.3em] text-white/20 uppercase">
+            Origin Story
+          </p>
+        </motion.div>
+
+        {/* ── Scroll camera: scene drifts with scroll ── */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ x: camScrollX, y: camScrollY }}
+        >
+          {/* ── Mouse camera: scene drifts with cursor ── */}
+          <motion.div
+            className="absolute inset-0"
+            style={{ x: camMouseX, y: camMouseY }}
+          >
+
+            {/* ── Far star layer — dense, dim, barely moves ── */}
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              style={{ y: farY }}
+            >
+              {stars.far.map((s) => (
+                <div
+                  key={s.id}
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    left:    `${s.x}%`,
+                    top:     `${s.y}%`,
+                    width:   `${s.size}px`,
+                    height:  `${s.size}px`,
+                    opacity: s.opacity,
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            {/* ── Mid star layer ── */}
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              style={{ y: midY }}
+            >
+              {stars.mid.map((s) => (
+                <div
+                  key={s.id}
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    left:    `${s.x}%`,
+                    top:     `${s.y}%`,
+                    width:   `${s.size}px`,
+                    height:  `${s.size}px`,
+                    opacity: s.opacity,
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            {/* ── Near star layer — bright, large, animated twinkle ── */}
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              style={{ y: nearY }}
+            >
+              {stars.near.map((s) => (
+                <motion.div
+                  key={s.id}
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    left:   `${s.x}%`,
+                    top:    `${s.y}%`,
+                    width:  `${s.size}px`,
+                    height: `${s.size}px`,
+                    boxShadow: `0 0 ${s.size * 2.5}px rgba(255,255,255,${(s.opacity * 0.6).toFixed(2)})`,
+                  }}
+                  animate={{ opacity: [s.opacity, s.opacity * 0.2, s.opacity] }}
+                  transition={{
+                    duration: s.dur,
+                    delay:    s.delay,
+                    repeat:   Infinity,
+                    ease:     "easeInOut",
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            {/* ── Atmospheric glow ── */}
             <div
-              key={i}
-              className="absolute rounded-full bg-white"
+              className="pointer-events-none absolute inset-0"
               style={{
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                width: star.size,
-                height: star.size,
-                opacity: star.opacity,
+                background:
+                  "radial-gradient(ellipse at 45% 45%, rgba(220,20,60,0.045) 0%, transparent 65%)",
+              }}
+            />
+
+            {/* ── Constellation lines — pathLength tied directly to scroll ── */}
+            <svg
+              className="pointer-events-none absolute inset-0 h-full w-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              style={{ zIndex: 10 }}
+            >
+              {LINES.map((line, i) => {
+                const from      = line[0];
+                const to        = line[1];
+                const isPrimary = line[4];
+                const a = NODE_POS[from];
+                const b = NODE_POS[to];
+                return (
+                  <motion.path
+                    key={i}
+                    d={`M ${a.x} ${a.y} L ${b.x} ${b.y}`}
+                    fill="none"
+                    stroke={
+                      isPrimary
+                        ? "rgba(220,20,60,0.65)"
+                        : "rgba(220,20,60,0.22)"
+                    }
+                    strokeWidth={isPrimary ? "0.20" : "0.09"}
+                    strokeLinecap="round"
+                    style={{
+                      pathLength: linePaths[i],
+                      filter: isPrimary
+                        ? "drop-shadow(0 0 1.5px rgba(220,20,60,0.55))"
+                        : "none",
+                    }}
+                  />
+                );
+              })}
+            </svg>
+
+            {/* ── Nodes — zero-size anchor at each % position ── */}
+            {signalBlocks.map((block, i) => {
+              const pos    = NODE_POS[i];
+              const isLeft = pos.x < 50;
+
+              return (
+                <div
+                  key={block.id}
+                  className="absolute"
+                  style={{
+                    left:     `${pos.x}%`,
+                    top:      `${pos.y}%`,
+                    width:    0,
+                    height:   0,
+                    overflow: "visible",
+                    zIndex:   20,
+                  }}
+                >
+                  <motion.div
+                    style={{
+                      position: "absolute" as const,
+                      width:    0,
+                      height:   0,
+                      overflow: "visible",
+                      opacity:  nodeOpacity[i],
+                      scale:    nodeScale[i],
+                    }}
+                  >
+                    {/* Outer glow blob */}
+                    <div
+                      className="absolute rounded-full pointer-events-none"
+                      style={{
+                        width:  "68px",
+                        height: "68px",
+                        left:   "-34px",
+                        top:    "-34px",
+                        background:
+                          "radial-gradient(circle, rgba(220,20,60,0.28) 0%, transparent 70%)",
+                      }}
+                    />
+
+                    {/* Pulse ring — primary */}
+                    <motion.div
+                      className="absolute rounded-full pointer-events-none"
+                      style={{
+                        width:  "18px",
+                        height: "18px",
+                        left:   "-9px",
+                        top:    "-9px",
+                        border: "1px solid rgba(220,20,60,0.55)",
+                      }}
+                      animate={{
+                        scale:   [1, 2.5, 1],
+                        opacity: [0.7, 0, 0.7],
+                      }}
+                      transition={{
+                        duration: 2.8 + i * 0.5,
+                        repeat:   Infinity,
+                        ease:     "easeOut",
+                        delay:    i * 0.7,
+                      }}
+                    />
+
+                    {/* Pulse ring — secondary (offset phase) */}
+                    <motion.div
+                      className="absolute rounded-full pointer-events-none"
+                      style={{
+                        width:  "18px",
+                        height: "18px",
+                        left:   "-9px",
+                        top:    "-9px",
+                        border: "1px solid rgba(220,20,60,0.25)",
+                      }}
+                      animate={{
+                        scale:   [1, 1.75, 1],
+                        opacity: [0.4, 0, 0.4],
+                      }}
+                      transition={{
+                        duration: 2.2 + i * 0.4,
+                        repeat:   Infinity,
+                        ease:     "easeOut",
+                        delay:    i * 0.7 + 1.3,
+                      }}
+                    />
+
+                    {/* Core dot */}
+                    <div
+                      className="absolute rounded-full bg-crimson"
+                      style={{
+                        width:  "8px",
+                        height: "8px",
+                        left:   "-4px",
+                        top:    "-4px",
+                        boxShadow:
+                          "0 0 10px rgba(220,20,60,0.95), 0 0 28px rgba(220,20,60,0.4)",
+                      }}
+                    />
+
+                    {/* Content panel */}
+                    <motion.div
+                      className="absolute w-36 sm:w-52 pointer-events-none"
+                      style={{
+                        ...(isLeft ? { left: "14px" } : { right: "14px" }),
+                        top:     "0px",
+                        y:       "-50%",
+                        opacity: contentOp[i],
+                      }}
+                    >
+                      <div
+                        style={{
+                          background:     "rgba(0,0,0,0.85)",
+                          backdropFilter: "blur(18px)",
+                          padding:        "12px 14px",
+                          border:         "1px solid rgba(220,20,60,0.14)",
+                          borderLeft: isLeft
+                            ? "2px solid rgba(220,20,60,0.6)"
+                            : "1px solid rgba(220,20,60,0.14)",
+                          borderRight: !isLeft
+                            ? "2px solid rgba(220,20,60,0.6)"
+                            : "1px solid rgba(220,20,60,0.14)",
+                        }}
+                      >
+                        <p className="font-mono text-[8px] tracking-[0.4em] text-crimson/55 uppercase mb-1">
+                          {block.index}
+                        </p>
+                        <p
+                          className={`text-[11px] font-bold tracking-wide text-white leading-snug${
+                            block.glitch ? " glitch-text" : ""
+                          }`}
+                        >
+                          {block.title}
+                        </p>
+                        <ul className="mt-2 flex flex-col gap-1.5">
+                          {block.signals.map((sig, j) => (
+                            <li
+                              key={j}
+                              className="flex items-start gap-1.5 text-[9px] leading-tight text-white/40"
+                            >
+                              <span
+                                className="mt-[4px] shrink-0 rounded-full bg-crimson/50"
+                                style={{ width: "2px", height: "2px" }}
+                              />
+                              {sig}
+                            </li>
+                          ))}
+                        </ul>
+                        {block.detail && (
+                          <p
+                            className="mt-2 text-[8px] leading-relaxed italic text-white/22"
+                            style={{
+                              borderTop:  "1px solid rgba(220,20,60,0.08)",
+                              paddingTop: "8px",
+                            }}
+                          >
+                            {block.detail}
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                </div>
+              );
+            })}
+
+          </motion.div>
+        </motion.div>
+
+        {/* ── Scroll cue ── */}
+        <motion.div
+          className="pointer-events-none absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-2 select-none"
+          style={{ opacity: scrollCueOp }}
+        >
+          <span className="font-mono text-[9px] tracking-[0.45em] text-white/25 uppercase">
+            Scroll to traverse
+          </span>
+          <motion.div
+            animate={{ y: [0, 7, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="h-7 w-[1px] bg-gradient-to-b from-crimson/40 to-transparent"
+          />
+        </motion.div>
+
+        {/* ── Node progress dots (bottom-right) ── */}
+        <div className="pointer-events-none absolute bottom-8 right-8 z-30 flex flex-col gap-3">
+          {signalBlocks.map((_, i) => (
+            <motion.div
+              key={i}
+              className="rounded-full"
+              style={{
+                width:      "4px",
+                height:     "4px",
+                background: "rgba(220,20,60,0.85)",
+                opacity:    nodeOpacity[i],
               }}
             />
           ))}
-        </motion.div>
+        </div>
 
-        {/* Subtle cosmic radial gradient */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: "radial-gradient(ellipse at 40% 40%, rgba(220,20,60,0.03) 0%, transparent 60%)",
-          }}
-        />
-
-        {/* SVG constellation lines */}
-        <ConstellationLines />
-
-        {/* Faux secondary star nodes */}
-        {FAUX_STARS.map((star, i) => (
-          <FauxStarNode key={i} star={star} />
-        ))}
-
-        {/* Primary constellation nodes */}
-        {signalBlocks.map((block, i) => (
-          <ConstellationNode key={block.id} block={block} index={i} />
-        ))}
       </div>
-    </section>
+    </div>
   );
 }

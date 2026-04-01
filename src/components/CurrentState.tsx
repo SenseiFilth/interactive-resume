@@ -1,13 +1,28 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const CTA_URL =
   "https://www.upwork.com/services/product/design-dynamic-personal-website-interactive-animated-high-end-design-2038279724912340969?ref=project_share";
 
 export default function CurrentState() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Parallax: heading moves slower than scroll, button moves even slower — creates depth layers
+  const headingY = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const subtitleY = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const buttonY = useTransform(scrollYProgress, [0, 1], [20, -20]);
+
   return (
-    <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-black px-4 py-32">
+    <section
+      ref={sectionRef}
+      className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-black px-4 py-32"
+    >
       {/* Background glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(220,20,60,0.04)_0%,_transparent_60%)]" />
 
@@ -22,26 +37,37 @@ export default function CurrentState() {
           Current State
         </motion.p>
 
+        {/* Heading with parallax depth */}
         <motion.h2
+          style={{ y: headingY }}
           initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-8 text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl"
+          className="mt-8 font-bold leading-tight tracking-[0.04em] text-white"
         >
-          <span className="font-display">Building Digital</span>
-          <span style={{ fontFamily: "var(--font-inter, Inter, system-ui, sans-serif)" }}> + </span>
-          <span className="font-display">Physical Systems</span>
+          {/* Mobile (portrait): 3 lines */}
+          <span className="block sm:hidden">
+            <span className="font-display block text-3xl">Building Digital</span>
+            <span className="block text-3xl font-bold text-white/50 my-1">+</span>
+            <span className="font-display block text-3xl">Physical Systems</span>
+          </span>
+          {/* Desktop: single flow */}
+          <span className="hidden sm:inline font-display text-4xl md:text-5xl">
+            Building Digital + Physical Systems
+          </span>
         </motion.h2>
 
+        {/* Subtitle with parallax — matching hero subtitle style */}
         <motion.p
+          style={{ y: subtitleY }}
           initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-6 text-base leading-relaxed text-steel sm:text-lg"
+          className="mt-6 text-xs tracking-[0.4em] text-steel uppercase sm:text-sm"
         >
-          Freelance Development &amp; LX/AV Production
+          Freelance Development &amp; Live Production
         </motion.p>
 
         {/* Divider */}
@@ -53,10 +79,11 @@ export default function CurrentState() {
           className="mx-auto mt-10 h-[1px] w-24 origin-center bg-gradient-to-r from-transparent via-crimson/40 to-transparent"
         />
 
-        {/* CTA */}
+        {/* CTA with parallax depth */}
         <motion.div
+          style={{ y: buttonY }}
           initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-10"
