@@ -131,7 +131,7 @@ export default function TimelineSection() {
     [0.03, 0.03, 1.00, 1.00, 0.65, 0.65]);
   const n3 = useTransform(scrollYProgress,
     [0.00, 0.48, 0.56, 0.70, 1.00],
-    [0.01, 0.01, 1.00, 1.00, 1.00]);
+    [0.10, 0.10, 1.00, 1.00, 1.00]);
 
   // ── Node scale ───────────────────────────────────────────────────────────
   const s0 = useTransform(scrollYProgress,
@@ -144,8 +144,8 @@ export default function TimelineSection() {
     [0.32, 0.40, 0.47, 0.54, 1.00],
     [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s3 = useTransform(scrollYProgress,
-    [0.48, 0.56, 0.65, 1.00],
-    [0.45, 1.35, 1.00, 1.00]);
+    [0.00, 0.48, 0.56, 0.65, 1.00],
+    [0.45, 0.45, 1.35, 1.00, 1.00]);
 
   // ── Content panel opacity — active window then persists at 0.5 ───────────
   // n3 stays full (last card should always be readable at section end)
@@ -524,7 +524,7 @@ export default function TimelineSection() {
             ══════════════════════════════════════════════════════════ */}
         <div
           className="sm:hidden absolute z-40"
-          style={{ bottom: "24px", left: "16px", right: "16px" }}
+          style={{ bottom: "44px", left: "16px", right: "16px" }}
         >
           {/* Node progress dots — glowing when active */}
           <div className="mb-3 flex items-center justify-center gap-3">
@@ -552,9 +552,9 @@ export default function TimelineSection() {
               i !== mobileCard ? null : (
                 <motion.div
                   key={block.id}
-                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0,  scale: 1    }}
-                  exit={{    opacity: 0, y: -8,  scale: 0.98 }}
+                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0,   scale: 1    }}
+                  exit={{    opacity: 0, y: -6,   scale: 0.98 }}
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
                   {/* Outer glow ring — ties card to constellation color language */}
