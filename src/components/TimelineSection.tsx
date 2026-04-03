@@ -558,8 +558,8 @@ export default function TimelineSection() {
             ))}
           </div>
 
-          {/* Signal readout — anchored above dots, never shifts */}
-          <div className="absolute inset-x-0 bottom-16 flex justify-center">
+          {/* Signal readout — top-anchored so all 4 cards start at the same height */}
+          <div className="absolute inset-x-0 top-[40px] flex justify-center">
             <AnimatePresence mode="wait">
               {signalBlocks.map((block, i) =>
                 i !== mobileCard ? null : (
