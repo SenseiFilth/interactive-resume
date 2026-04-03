@@ -518,66 +518,74 @@ export default function TimelineSection() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            MOBILE CARD STRIP — sm:hidden
-            Single centered card at bottom of viewport. Swaps cleanly
-            between the 4 nodes as scroll progresses. Avoids all the
-            side-panel collision that happens on small screens.
+            MOBILE FLOATING CARD — sm:hidden
+            Centered glass panel that floats above the constellation.
+            No full-bleed backgrounds — the card belongs to the scene.
             ══════════════════════════════════════════════════════════ */}
-        <div className="sm:hidden absolute bottom-0 left-0 right-0 z-40 px-4 pb-6 pt-3"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.95) 60%, transparent 100%)",
-          }}
+        <div
+          className="sm:hidden absolute z-40"
+          style={{ bottom: "24px", left: "16px", right: "16px" }}
         >
-          {/* Progress bar — shows which of the 4 nodes is active */}
-          <div className="mb-3 flex justify-center gap-2">
+          {/* Node progress dots — glowing when active */}
+          <div className="mb-3 flex items-center justify-center gap-3">
             {signalBlocks.map((_, i) => (
               <div
                 key={i}
-                className="h-[2px] rounded-full transition-all duration-300"
+                className="rounded-full transition-all duration-500"
                 style={{
-                  width:      i === mobileCard ? "20px" : "6px",
+                  width:      i === mobileCard ? "6px"  : "4px",
+                  height:     i === mobileCard ? "6px"  : "4px",
                   background: i === mobileCard
-                    ? "rgba(220,20,60,0.85)"
-                    : "rgba(255,255,255,0.15)",
+                    ? "rgba(220,20,60,0.90)"
+                    : "rgba(255,255,255,0.18)",
+                  boxShadow:  i === mobileCard
+                    ? "0 0 8px rgba(220,20,60,0.7), 0 0 16px rgba(220,20,60,0.3)"
+                    : "none",
                 }}
               />
             ))}
           </div>
 
-          {/* Active card — fades between nodes */}
+          {/* Floating glass card */}
           <AnimatePresence mode="wait">
             {signalBlocks.map((block, i) =>
               i !== mobileCard ? null : (
                 <motion.div
                   key={block.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0,  scale: 1    }}
+                  exit={{    opacity: 0, y: -8,  scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
+                  {/* Outer glow ring — ties card to constellation color language */}
                   <div
                     style={{
-                      background:     "rgba(6,6,6,0.92)",
-                      backdropFilter: "blur(24px)",
-                      border:         "1px solid rgba(220,20,60,0.18)",
-                      borderTop:      "2px solid rgba(220,20,60,0.55)",
-                      padding:        "14px 16px",
+                      background:     "rgba(4,4,4,0.92)",
+                      backdropFilter: "blur(28px)",
+                      WebkitBackdropFilter: "blur(28px)",
+                      border:         "1px solid rgba(220,20,60,0.20)",
+                      borderTop:      "2px solid rgba(220,20,60,0.65)",
+                      boxShadow: [
+                        "0 0 0 1px rgba(255,255,255,0.03)",
+                        "0 -8px 32px rgba(220,20,60,0.07)",
+                        "0 16px 48px rgba(0,0,0,0.65)",
+                      ].join(", "),
+                      padding: "18px 20px 20px",
                     }}
                   >
-                    {/* Index + counter */}
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <p className="font-mono text-[8px] tracking-[0.4em] text-crimson/55 uppercase">
+                    {/* Index label + counter */}
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="font-mono text-[8px] tracking-[0.45em] text-crimson/55 uppercase">
                         {block.index}
                       </p>
                       <span className="font-mono text-[8px] tracking-wider text-white/20">
-                        {i + 1} / {signalBlocks.length}
+                        {i + 1}&thinsp;/&thinsp;{signalBlocks.length}
                       </span>
                     </div>
 
                     {/* Title */}
                     <p
-                      className={`text-sm font-bold tracking-wide text-white leading-snug${
+                      className={`text-base font-bold tracking-wide text-white leading-snug${
                         block.glitch ? " glitch-text" : ""
                       }`}
                     >
@@ -585,14 +593,14 @@ export default function TimelineSection() {
                     </p>
 
                     {/* Signals */}
-                    <ul className="mt-2 flex flex-col gap-1.5">
+                    <ul className="mt-3 flex flex-col gap-2">
                       {block.signals.map((sig, j) => (
                         <li
                           key={j}
-                          className="flex items-start gap-2 text-xs leading-tight text-white/50"
+                          className="flex items-start gap-2.5 text-[12px] leading-snug text-white/55"
                         >
                           <span
-                            className="mt-[5px] shrink-0 rounded-full bg-crimson/55"
+                            className="mt-[5px] shrink-0 rounded-full bg-crimson/60"
                             style={{ width: "3px", height: "3px" }}
                           />
                           {sig}
@@ -603,10 +611,10 @@ export default function TimelineSection() {
                     {/* Detail */}
                     {block.detail && (
                       <p
-                        className="mt-2 text-[10px] italic leading-relaxed text-white/30"
+                        className="mt-3 text-[10px] italic leading-relaxed text-white/35"
                         style={{
-                          borderTop:  "1px solid rgba(220,20,60,0.08)",
-                          paddingTop: "8px",
+                          borderTop:  "1px solid rgba(220,20,60,0.10)",
+                          paddingTop: "10px",
                         }}
                       >
                         {block.detail}
@@ -619,7 +627,7 @@ export default function TimelineSection() {
           </AnimatePresence>
         </div>
 
-        {/* ── Scroll cue — hidden on mobile (card strip uses bottom space) ── */}
+        {/* ── Scroll cue — desktop only ── */}
         <motion.div
           className="pointer-events-none absolute bottom-8 left-1/2 z-30 hidden sm:flex -translate-x-1/2 flex-col items-center gap-2 select-none"
           style={{ opacity: scrollCueOp }}
