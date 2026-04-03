@@ -127,11 +127,11 @@ export default function TimelineSection() {
     [0.00, 0.18, 0.26, 0.33, 0.40, 1.00],
     [0.06, 0.06, 1.00, 1.00, 0.65, 0.65]);
   const n2 = useTransform(scrollYProgress,
-    [0.00, 0.32, 0.40, 0.47, 0.54, 1.00],
-    [0.03, 0.03, 1.00, 1.00, 0.65, 0.65]);
+    [0.00, 0.30, 0.38, 0.44, 0.52, 1.00],
+    [0.08, 0.08, 1.00, 1.00, 0.65, 0.65]);
   const n3 = useTransform(scrollYProgress,
-    [0.00, 0.48, 0.56, 0.70, 1.00],
-    [0.10, 0.10, 1.00, 1.00, 1.00]);
+    [0.00, 0.46, 0.54, 0.60, 0.68, 1.00],
+    [0.10, 0.10, 1.00, 1.00, 0.65, 0.65]);
 
   // ── Node scale ───────────────────────────────────────────────────────────
   const s0 = useTransform(scrollYProgress,
@@ -141,10 +141,10 @@ export default function TimelineSection() {
     [0.18, 0.26, 0.33, 0.40, 1.00],
     [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s2 = useTransform(scrollYProgress,
-    [0.32, 0.40, 0.47, 0.54, 1.00],
+    [0.30, 0.38, 0.44, 0.52, 1.00],
     [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s3 = useTransform(scrollYProgress,
-    [0.00, 0.48, 0.56, 0.65, 1.00],
+    [0.00, 0.46, 0.54, 0.62, 1.00],
     [0.45, 0.45, 1.35, 1.00, 1.00]);
 
   // ── Content panel opacity — active window then persists at 0.5 ───────────
@@ -155,13 +155,13 @@ export default function TimelineSection() {
   const c1 = useTransform(scrollYProgress,
     [0.17, 0.21, 0.27, 0.34, 1.00],
     [0,    1,    1,    0.50, 0.50]);
-  // c2 starts at 0.40 — n2 scale peak (line l12 finishes at 0.38, node pops at 0.40)
+  // c2 starts at 0.38 — l12 finishes at 0.38, n2 pops simultaneously
   const c2 = useTransform(scrollYProgress,
-    [0.40, 0.44, 0.50, 0.55, 1.00],
+    [0.38, 0.42, 0.48, 0.53, 1.00],
     [0,    1,    1,    0.50, 0.50]);
-  // c3 starts at 0.56 — n3 scale peak (line l23 finishes at 0.54, node pops at 0.56)
+  // c3 starts at 0.54 — l23 finishes at 0.54, n3 pops simultaneously
   const c3 = useTransform(scrollYProgress,
-    [0.56, 0.60, 0.70, 1.00],
+    [0.54, 0.58, 0.68, 1.00],
     [0,    1,    1,    1.00]);
 
   // ── Constellation lines ───────────────────────────────────────────────────
@@ -185,9 +185,9 @@ export default function TimelineSection() {
   const [mobileCard, setMobileCard] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     if      (v < 0.17) setMobileCard(0); // n0 card
-    else if (v < 0.40) setMobileCard(1); // n1 card (was 0.31)
-    else if (v < 0.56) setMobileCard(2); // n2 card (was 0.47) — now matches desktop c2
-    else               setMobileCard(3); // n3 card — now matches desktop c3
+    else if (v < 0.38) setMobileCard(1); // n1 card — matches c1 window end
+    else if (v < 0.54) setMobileCard(2); // n2 card — matches c2 start (l12 end)
+    else               setMobileCard(3); // n3 card — matches c3 start (l23 end)
   });
 
   const handleMouseMove = useCallback(
@@ -538,30 +538,28 @@ export default function TimelineSection() {
             }}
           />
 
-          {/* Readout content — absolutely positioned from bottom */}
-          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-9">
+          {/* Progress dots — fixed at bottom, never shifts */}
+          <div className="absolute inset-x-0 bottom-9 flex justify-center items-center gap-3">
+            {signalBlocks.map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-500"
+                style={{
+                  width:      i === mobileCard ? "6px"  : "4px",
+                  height:     i === mobileCard ? "6px"  : "4px",
+                  background: i === mobileCard
+                    ? "rgba(220,20,60,0.90)"
+                    : "rgba(255,255,255,0.18)",
+                  boxShadow:  i === mobileCard
+                    ? "0 0 8px rgba(220,20,60,0.7), 0 0 20px rgba(220,20,60,0.3)"
+                    : "none",
+                }}
+              />
+            ))}
+          </div>
 
-            {/* Progress dots */}
-            <div className="mb-5 flex items-center gap-3">
-              {signalBlocks.map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-full transition-all duration-500"
-                  style={{
-                    width:      i === mobileCard ? "6px"  : "4px",
-                    height:     i === mobileCard ? "6px"  : "4px",
-                    background: i === mobileCard
-                      ? "rgba(220,20,60,0.90)"
-                      : "rgba(255,255,255,0.18)",
-                    boxShadow:  i === mobileCard
-                      ? "0 0 8px rgba(220,20,60,0.7), 0 0 20px rgba(220,20,60,0.3)"
-                      : "none",
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Signal readout — pure typography, no container */}
+          {/* Signal readout — anchored above dots, never shifts */}
+          <div className="absolute inset-x-0 bottom-16 flex justify-center">
             <AnimatePresence mode="wait">
               {signalBlocks.map((block, i) =>
                 i !== mobileCard ? null : (
@@ -640,6 +638,7 @@ export default function TimelineSection() {
             </AnimatePresence>
           </div>
         </div>
+        {/* end mobile readout */}
 
         {/* ── Scroll cue — desktop only ── */}
         <motion.div
