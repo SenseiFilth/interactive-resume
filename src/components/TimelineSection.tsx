@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo, useCallback, useState } from "react";
 import {
   motion,
   useScroll,
@@ -11,10 +11,7 @@ import {
 import { signalBlocks } from "@/data/content";
 
 /* ══════════════════════════════════════════════════════════════════
-   STAR FIELD — 3 depth layers, 174 total
-   near: bright + animated twinkle
-   mid:  medium glow, static
-   far:  tiny + very dim, dense
+   STAR FIELD — 3 depth layers
    ══════════════════════════════════════════════════════════════════ */
 interface Star {
   id: number;
@@ -31,12 +28,9 @@ function useStarLayers() {
     let id = 0;
     function make(
       count: number,
-      minSz: number,
-      maxSz: number,
-      minOp: number,
-      maxOp: number,
-      minDur: number,
-      maxDur: number
+      minSz: number, maxSz: number,
+      minOp: number, maxOp: number,
+      minDur: number, maxDur: number
     ): Star[] {
       return Array.from({ length: count }, () => ({
         id: id++,
@@ -49,15 +43,15 @@ function useStarLayers() {
       }));
     }
     return {
-      near: make(24, 1.8, 3.5,  0.55, 1.00, 3,  6),
-      mid:  make(58, 0.9, 2.0,  0.22, 0.52, 6,  10),
-      far:  make(92, 0.3, 0.9,  0.05, 0.18, 10, 16),
+      near: make(24, 1.8, 3.5, 0.55, 1.00, 3,  6),
+      mid:  make(58, 0.9, 2.0, 0.22, 0.52, 6,  10),
+      far:  make(92, 0.3, 0.9, 0.05, 0.18, 10, 16),
     };
   }, []);
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   LAYOUT
+   LAYOUT — node % positions + line definitions
    ══════════════════════════════════════════════════════════════════ */
 const NODE_POS = [
   { x: 26, y: 33 }, // 0 — Built to Deconstruct  (upper left)
@@ -68,103 +62,104 @@ const NODE_POS = [
 
 // [fromIdx, toIdx, drawStart, drawEnd, isPrimary]
 const LINES: readonly [number, number, number, number, boolean][] = [
-  [0, 1, 0.26, 0.38, true ],
-  [1, 2, 0.51, 0.63, true ],
-  [2, 3, 0.76, 0.88, true ],
-  [0, 2, 0.58, 0.68, false],
-  [1, 3, 0.83, 0.93, false],
+  [0, 1, 0.20, 0.30, true ],
+  [1, 2, 0.44, 0.54, true ],
+  [2, 3, 0.68, 0.78, true ],
+  [0, 2, 0.52, 0.62, false],
+  [1, 3, 0.76, 0.86, false],
 ] as const;
 
 /* ══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
-   500vh outer container → sticky 100vh viewport
-   scrollYProgress (0→1) drives node/content/line animations directly
-   — no spring lag on core animations for real-time scroll sync
-   A lighter spring is kept only for the camera parallax drift
+   300vh outer → sticky 100vh viewport (was 500vh — 40% faster)
+   scrollYProgress drives nodes/lines/content directly (no spring lag)
+   camSpring (stiffness:150) used ONLY for camera drift
    ══════════════════════════════════════════════════════════════════ */
 export default function TimelineSection() {
   const containerRef = useRef<HTMLDivElement>(null);
+  // null = no card expanded; number = that node index is expanded
+  const [expandedNode, setExpandedNode] = useState<number | null>(null);
 
-  // Mouse tracking
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
   const springMX = useSpring(mouseX, { stiffness: 30, damping: 20 });
   const springMY = useSpring(mouseY, { stiffness: 30, damping: 20 });
 
-  // Raw scroll progress — used directly for node/line/content so they
-  // are perfectly in sync with the user's scroll position (no lag)
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
-  // Lighter spring ONLY for camera parallax — keeps the scene drift smooth
+  // Spring ONLY for camera — keeps scene drift smooth without lagging nodes
   const camSpring = useSpring(scrollYProgress, { stiffness: 150, damping: 35 });
 
   const stars = useStarLayers();
 
-  // ── Camera drift (scroll) ────────────────────────────────────────────────
+  // ── Camera drift ────────────────────────────────────────────────────────
   const camScrollX = useTransform(camSpring, [0, 1], ["-2.5%", "2.5%"]);
   const camScrollY = useTransform(camSpring, [0, 1], ["0%",    "-2%"  ]);
+  const camMouseX  = useTransform(springMX,  [0, 1], ["-2%",   "2%"  ]);
+  const camMouseY  = useTransform(springMY,  [0, 1], ["-1.5%", "1.5%"]);
 
-  // ── Camera drift (mouse) ─────────────────────────────────────────────────
-  const camMouseX = useTransform(springMX, [0, 1], ["-2%",   "2%"   ]);
-  const camMouseY = useTransform(springMY, [0, 1], ["-1.5%", "1.5%" ]);
-
-  // ── Star layer depth parallax ────────────────────────────────────────────
+  // ── Star depth parallax ──────────────────────────────────────────────────
   const nearY = useTransform(camSpring, [0, 1], ["0%", "-14%"]);
   const midY  = useTransform(camSpring, [0, 1], ["0%", "-6%" ]);
   const farY  = useTransform(camSpring, [0, 1], ["0%", "-2%" ]);
 
-  // ── Header fade — disappears as you move into the experience ─────────────
-  // Using scrollYProgress directly = instant response, no lag
+  // ── Header fades as user traverses ──────────────────────────────────────
   const headerOp = useTransform(scrollYProgress, [0, 0.04, 0.12], [1, 1, 0]);
 
-  // ── Node visibility: ghost → active → depart ─────────────────────────────
-  // Direct scrollYProgress = perfectly in sync with scroll, no spring lag
-  // Thresholds slightly tightened vs. previous version for snappier feel
+  // ── Node opacity: ghost → full glow → SUSTAINED (never fades back) ──────
+  // After departure each node holds at 0.55 so visited nodes keep their glow
   const n0 = useTransform(scrollYProgress,
-    [0.00, 0.06, 0.17, 0.26, 0.30],
-    [0.12, 1.00, 1.00, 0.30, 0.20]);
+    [0.00, 0.06, 0.13, 0.22, 1.00],
+    [0.12, 1.00, 1.00, 0.55, 0.55]);
   const n1 = useTransform(scrollYProgress,
-    [0.00, 0.24, 0.32, 0.44, 0.52, 0.55],
-    [0.06, 0.06, 1.00, 1.00, 0.30, 0.20]);
+    [0.00, 0.26, 0.34, 0.43, 0.52, 1.00],
+    [0.06, 0.06, 1.00, 1.00, 0.55, 0.55]);
   const n2 = useTransform(scrollYProgress,
-    [0.00, 0.49, 0.57, 0.69, 0.77, 0.80],
-    [0.03, 0.03, 1.00, 1.00, 0.30, 0.20]);
+    [0.00, 0.50, 0.58, 0.67, 0.76, 1.00],
+    [0.03, 0.03, 1.00, 1.00, 0.55, 0.55]);
   const n3 = useTransform(scrollYProgress,
-    [0.00, 0.74, 0.82, 0.94, 1.00],
-    [0.01, 0.01, 1.00, 1.00, 1.00]);
+    [0.00, 0.74, 0.82, 1.00],
+    [0.01, 0.01, 1.00, 1.00]);
 
-  // ── Node scale: pop on arrival, settle, shrink on departure ─────────────
+  // ── Node scale: pop on arrival → settled → sustained (no ghost shrink) ──
   const s0 = useTransform(scrollYProgress,
-    [0.00, 0.06, 0.15, 0.26, 0.30],
-    [0.45, 1.35, 1.00, 0.78, 0.60]);
+    [0.00, 0.06, 0.13, 0.22, 1.00],
+    [0.45, 1.35, 1.00, 0.72, 0.72]);
   const s1 = useTransform(scrollYProgress,
-    [0.24, 0.32, 0.41, 0.52, 0.55],
-    [0.45, 1.35, 1.00, 0.78, 0.60]);
+    [0.26, 0.34, 0.43, 0.52, 1.00],
+    [0.45, 1.35, 1.00, 0.72, 0.72]);
   const s2 = useTransform(scrollYProgress,
-    [0.49, 0.57, 0.66, 0.77, 0.80],
-    [0.45, 1.35, 1.00, 0.78, 0.60]);
+    [0.50, 0.58, 0.67, 0.76, 1.00],
+    [0.45, 1.35, 1.00, 0.72, 0.72]);
   const s3 = useTransform(scrollYProgress,
     [0.74, 0.82, 0.91, 1.00],
     [0.45, 1.35, 1.00, 1.00]);
 
-  // ── Content panel visibility ─────────────────────────────────────────────
-  const c0 = useTransform(scrollYProgress, [0.08, 0.14, 0.23, 0.27], [0, 1, 1, 0]);
-  const c1 = useTransform(scrollYProgress, [0.33, 0.39, 0.48, 0.52], [0, 1, 1, 0]);
-  const c2 = useTransform(scrollYProgress, [0.58, 0.64, 0.73, 0.77], [0, 1, 1, 0]);
-  const c3 = useTransform(scrollYProgress, [0.83, 0.89, 1.00],       [0, 1, 1  ]);
+  // ── Content panel opacity: fades in, active window, then persists at 0.5 ─
+  const c0 = useTransform(scrollYProgress,
+    [0.06, 0.11, 0.20, 0.26, 1.00],
+    [0,    1,    1,    0.50, 0.50]);
+  const c1 = useTransform(scrollYProgress,
+    [0.31, 0.36, 0.45, 0.52, 1.00],
+    [0,    1,    1,    0.50, 0.50]);
+  const c2 = useTransform(scrollYProgress,
+    [0.55, 0.60, 0.69, 0.76, 1.00],
+    [0,    1,    1,    0.50, 0.50]);
+  const c3 = useTransform(scrollYProgress,
+    [0.79, 0.84, 1.00],
+    [0,    1,    1   ]);
 
-  // ── Constellation line pathLength (draws AFTER node arrives) ────────────
-  const l01 = useTransform(scrollYProgress, [0.26, 0.38], [0, 1]);
-  const l12 = useTransform(scrollYProgress, [0.51, 0.63], [0, 1]);
-  const l23 = useTransform(scrollYProgress, [0.76, 0.88], [0, 1]);
-  const l02 = useTransform(scrollYProgress, [0.58, 0.68], [0, 1]);
-  const l13 = useTransform(scrollYProgress, [0.83, 0.93], [0, 1]);
+  // ── Constellation lines — draw AFTER node arrives ────────────────────────
+  const l01 = useTransform(scrollYProgress, [0.20, 0.30], [0, 1]);
+  const l12 = useTransform(scrollYProgress, [0.44, 0.54], [0, 1]);
+  const l23 = useTransform(scrollYProgress, [0.68, 0.78], [0, 1]);
+  const l02 = useTransform(scrollYProgress, [0.52, 0.62], [0, 1]);
+  const l13 = useTransform(scrollYProgress, [0.76, 0.86], [0, 1]);
   const linePaths = [l01, l12, l23, l02, l13];
 
-  // ── Scroll cue ───────────────────────────────────────────────────────────
   const scrollCueOp = useTransform(scrollYProgress, [0, 0.04, 0.10], [1, 1, 0]);
 
   const nodeOpacity = [n0, n1, n2, n3];
@@ -180,15 +175,22 @@ export default function TimelineSection() {
     [mouseX, mouseY]
   );
 
+  const toggleNode = useCallback(
+    (i: number) => setExpandedNode((prev) => (prev === i ? null : i)),
+    []
+  );
+
   return (
-    <div ref={containerRef} className="relative" style={{ height: "500vh" }}>
+    // 300vh — was 500vh; tighter window means all 4 nodes play through
+    // before the section exits the viewport
+    <div ref={containerRef} className="relative" style={{ height: "300vh" }}>
 
       {/* Sticky viewport */}
       <div
         className="sticky top-0 h-screen overflow-hidden bg-black"
         onMouseMove={handleMouseMove}
       >
-        {/* ── Section label — centered, fades out as you traverse ── */}
+        {/* ── Section label — fades as you traverse ── */}
         <motion.div
           style={{ opacity: headerOp }}
           className="pointer-events-none absolute top-8 left-0 right-0 z-30 flex flex-col items-center select-none"
@@ -201,85 +203,68 @@ export default function TimelineSection() {
           </p>
         </motion.div>
 
-        {/* ── Scroll camera: scene drifts with scroll ── */}
+        {/* ── Scroll camera ── */}
         <motion.div
           className="absolute inset-0"
           style={{ x: camScrollX, y: camScrollY }}
         >
-          {/* ── Mouse camera: scene drifts with cursor ── */}
+          {/* ── Mouse camera ── */}
           <motion.div
             className="absolute inset-0"
             style={{ x: camMouseX, y: camMouseY }}
           >
 
-            {/* ── Far star layer — dense, dim, barely moves ── */}
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              style={{ y: farY }}
-            >
+            {/* Far stars */}
+            <motion.div className="pointer-events-none absolute inset-0" style={{ y: farY }}>
               {stars.far.map((s) => (
                 <div
                   key={s.id}
                   className="absolute rounded-full bg-white"
                   style={{
-                    left:    `${s.x}%`,
-                    top:     `${s.y}%`,
-                    width:   `${s.size}px`,
-                    height:  `${s.size}px`,
+                    left: `${s.x}%`, top: `${s.y}%`,
+                    width: `${s.size}px`, height: `${s.size}px`,
                     opacity: s.opacity,
                   }}
                 />
               ))}
             </motion.div>
 
-            {/* ── Mid star layer ── */}
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              style={{ y: midY }}
-            >
+            {/* Mid stars */}
+            <motion.div className="pointer-events-none absolute inset-0" style={{ y: midY }}>
               {stars.mid.map((s) => (
                 <div
                   key={s.id}
                   className="absolute rounded-full bg-white"
                   style={{
-                    left:    `${s.x}%`,
-                    top:     `${s.y}%`,
-                    width:   `${s.size}px`,
-                    height:  `${s.size}px`,
+                    left: `${s.x}%`, top: `${s.y}%`,
+                    width: `${s.size}px`, height: `${s.size}px`,
                     opacity: s.opacity,
                   }}
                 />
               ))}
             </motion.div>
 
-            {/* ── Near star layer — bright, large, animated twinkle ── */}
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              style={{ y: nearY }}
-            >
+            {/* Near stars — animated twinkle */}
+            <motion.div className="pointer-events-none absolute inset-0" style={{ y: nearY }}>
               {stars.near.map((s) => (
                 <motion.div
                   key={s.id}
                   className="absolute rounded-full bg-white"
                   style={{
-                    left:   `${s.x}%`,
-                    top:    `${s.y}%`,
-                    width:  `${s.size}px`,
-                    height: `${s.size}px`,
+                    left: `${s.x}%`, top: `${s.y}%`,
+                    width: `${s.size}px`, height: `${s.size}px`,
                     boxShadow: `0 0 ${s.size * 2.5}px rgba(255,255,255,${(s.opacity * 0.6).toFixed(2)})`,
                   }}
                   animate={{ opacity: [s.opacity, s.opacity * 0.2, s.opacity] }}
                   transition={{
-                    duration: s.dur,
-                    delay:    s.delay,
-                    repeat:   Infinity,
-                    ease:     "easeInOut",
+                    duration: s.dur, delay: s.delay,
+                    repeat: Infinity, ease: "easeInOut",
                   }}
                 />
               ))}
             </motion.div>
 
-            {/* ── Atmospheric glow ── */}
+            {/* Atmospheric glow */}
             <div
               className="pointer-events-none absolute inset-0"
               style={{
@@ -288,7 +273,7 @@ export default function TimelineSection() {
               }}
             />
 
-            {/* ── Constellation lines — pathLength tied directly to scroll ── */}
+            {/* ── Constellation lines ── */}
             <svg
               className="pointer-events-none absolute inset-0 h-full w-full"
               viewBox="0 0 100 100"
@@ -296,21 +281,15 @@ export default function TimelineSection() {
               style={{ zIndex: 10 }}
             >
               {LINES.map((line, i) => {
-                const from      = line[0];
-                const to        = line[1];
+                const a = NODE_POS[line[0]];
+                const b = NODE_POS[line[1]];
                 const isPrimary = line[4];
-                const a = NODE_POS[from];
-                const b = NODE_POS[to];
                 return (
                   <motion.path
                     key={i}
                     d={`M ${a.x} ${a.y} L ${b.x} ${b.y}`}
                     fill="none"
-                    stroke={
-                      isPrimary
-                        ? "rgba(220,20,60,0.65)"
-                        : "rgba(220,20,60,0.22)"
-                    }
+                    stroke={isPrimary ? "rgba(220,20,60,0.65)" : "rgba(220,20,60,0.22)"}
                     strokeWidth={isPrimary ? "0.20" : "0.09"}
                     strokeLinecap="round"
                     style={{
@@ -324,10 +303,11 @@ export default function TimelineSection() {
               })}
             </svg>
 
-            {/* ── Nodes — zero-size anchor at each % position ── */}
+            {/* ── Nodes — zero-size anchors ── */}
             {signalBlocks.map((block, i) => {
-              const pos    = NODE_POS[i];
-              const isLeft = pos.x < 50;
+              const pos      = NODE_POS[i];
+              const isLeft   = pos.x < 50;
+              const isExpanded = expandedNode === i;
 
               return (
                 <div
@@ -339,12 +319,13 @@ export default function TimelineSection() {
                     width:    0,
                     height:   0,
                     overflow: "visible",
-                    zIndex:   20,
+                    // Expanded node floats above all others
+                    zIndex:   isExpanded ? 40 : 20,
                   }}
                 >
                   <motion.div
                     style={{
-                      position: "absolute" as const,
+                      position: "absolute",
                       width:    0,
                       height:   0,
                       overflow: "visible",
@@ -352,17 +333,18 @@ export default function TimelineSection() {
                       scale:    nodeScale[i],
                     }}
                   >
-                    {/* Outer glow blob */}
+                    {/* ── Outer glow blob — clickable hit area ── */}
                     <div
-                      className="absolute rounded-full pointer-events-none"
+                      className="absolute rounded-full cursor-pointer"
                       style={{
-                        width:  "68px",
-                        height: "68px",
-                        left:   "-34px",
-                        top:    "-34px",
+                        width:  "80px",
+                        height: "80px",
+                        left:   "-40px",
+                        top:    "-40px",
                         background:
-                          "radial-gradient(circle, rgba(220,20,60,0.28) 0%, transparent 70%)",
+                          "radial-gradient(circle, rgba(220,20,60,0.30) 0%, transparent 70%)",
                       }}
+                      onClick={() => toggleNode(i)}
                     />
 
                     {/* Pulse ring — primary */}
@@ -375,19 +357,14 @@ export default function TimelineSection() {
                         top:    "-9px",
                         border: "1px solid rgba(220,20,60,0.55)",
                       }}
-                      animate={{
-                        scale:   [1, 2.5, 1],
-                        opacity: [0.7, 0, 0.7],
-                      }}
+                      animate={{ scale: [1, 2.5, 1], opacity: [0.7, 0, 0.7] }}
                       transition={{
-                        duration: 2.8 + i * 0.5,
-                        repeat:   Infinity,
-                        ease:     "easeOut",
-                        delay:    i * 0.7,
+                        duration: 2.8 + i * 0.5, repeat: Infinity,
+                        ease: "easeOut", delay: i * 0.7,
                       }}
                     />
 
-                    {/* Pulse ring — secondary (offset phase) */}
+                    {/* Pulse ring — secondary */}
                     <motion.div
                       className="absolute rounded-full pointer-events-none"
                       style={{
@@ -397,21 +374,16 @@ export default function TimelineSection() {
                         top:    "-9px",
                         border: "1px solid rgba(220,20,60,0.25)",
                       }}
-                      animate={{
-                        scale:   [1, 1.75, 1],
-                        opacity: [0.4, 0, 0.4],
-                      }}
+                      animate={{ scale: [1, 1.75, 1], opacity: [0.4, 0, 0.4] }}
                       transition={{
-                        duration: 2.2 + i * 0.4,
-                        repeat:   Infinity,
-                        ease:     "easeOut",
-                        delay:    i * 0.7 + 1.3,
+                        duration: 2.2 + i * 0.4, repeat: Infinity,
+                        ease: "easeOut", delay: i * 0.7 + 1.3,
                       }}
                     />
 
-                    {/* Core dot */}
+                    {/* Core dot — also clickable */}
                     <div
-                      className="absolute rounded-full bg-crimson"
+                      className="absolute rounded-full bg-crimson cursor-pointer"
                       style={{
                         width:  "8px",
                         height: "8px",
@@ -420,22 +392,27 @@ export default function TimelineSection() {
                         boxShadow:
                           "0 0 10px rgba(220,20,60,0.95), 0 0 28px rgba(220,20,60,0.4)",
                       }}
+                      onClick={() => toggleNode(i)}
                     />
 
-                    {/* Content panel */}
+                    {/* ── Content panel — widens on expand ── */}
                     <motion.div
-                      className="absolute w-36 sm:w-52 pointer-events-none"
+                      className="absolute cursor-pointer"
+                      animate={{ width: isExpanded ? 264 : 212 }}
+                      initial={{ width: 212 }}
+                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                       style={{
                         ...(isLeft ? { left: "14px" } : { right: "14px" }),
                         top:     "0px",
                         y:       "-50%",
                         opacity: contentOp[i],
                       }}
+                      onClick={() => toggleNode(i)}
                     >
                       <div
                         style={{
-                          background:     "rgba(0,0,0,0.85)",
-                          backdropFilter: "blur(18px)",
+                          background:     "rgba(0,0,0,0.90)",
+                          backdropFilter: "blur(20px)",
                           padding:        "12px 14px",
                           border:         "1px solid rgba(220,20,60,0.14)",
                           borderLeft: isLeft
@@ -444,23 +421,46 @@ export default function TimelineSection() {
                           borderRight: !isLeft
                             ? "2px solid rgba(220,20,60,0.6)"
                             : "1px solid rgba(220,20,60,0.14)",
+                          // Glow pops the panel visually even at reduced opacity
+                          boxShadow: isExpanded
+                            ? "0 0 32px rgba(220,20,60,0.18), 0 0 64px rgba(220,20,60,0.08)"
+                            : "none",
+                          transition: "box-shadow 0.35s ease",
                         }}
                       >
-                        <p className="font-mono text-[8px] tracking-[0.4em] text-crimson/55 uppercase mb-1">
-                          {block.index}
-                        </p>
+                        {/* ── Header row: index label + expand indicator ── */}
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <p className="font-mono text-[8px] tracking-[0.4em] text-crimson/55 uppercase">
+                            {block.index}
+                          </p>
+                          {/* + rotates to × on expand */}
+                          <motion.span
+                            animate={{ rotate: isExpanded ? 45 : 0 }}
+                            transition={{ duration: 0.22 }}
+                            className="shrink-0 font-mono text-[12px] leading-none select-none"
+                            style={{ color: "rgba(220,20,60,0.45)" }}
+                          >
+                            +
+                          </motion.span>
+                        </div>
+
+                        {/* Title */}
                         <p
-                          className={`text-[11px] font-bold tracking-wide text-white leading-snug${
+                          className={`font-bold tracking-wide text-white leading-snug${
                             block.glitch ? " glitch-text" : ""
                           }`}
+                          style={{ fontSize: isExpanded ? "13px" : "11px" }}
                         >
                           {block.title}
                         </p>
+
+                        {/* Signals */}
                         <ul className="mt-2 flex flex-col gap-1.5">
                           {block.signals.map((sig, j) => (
                             <li
                               key={j}
-                              className="flex items-start gap-1.5 text-[9px] leading-tight text-white/40"
+                              className="flex items-start gap-1.5 leading-tight text-white/50"
+                              style={{ fontSize: isExpanded ? "10px" : "9px" }}
                             >
                               <span
                                 className="mt-[4px] shrink-0 rounded-full bg-crimson/50"
@@ -470,10 +470,13 @@ export default function TimelineSection() {
                             </li>
                           ))}
                         </ul>
+
+                        {/* Detail */}
                         {block.detail && (
                           <p
-                            className="mt-2 text-[8px] leading-relaxed italic text-white/22"
+                            className="mt-2 leading-relaxed italic text-white/30"
                             style={{
+                              fontSize:   isExpanded ? "9px" : "8px",
                               borderTop:  "1px solid rgba(220,20,60,0.08)",
                               paddingTop: "8px",
                             }}
@@ -483,6 +486,7 @@ export default function TimelineSection() {
                         )}
                       </div>
                     </motion.div>
+
                   </motion.div>
                 </div>
               );
