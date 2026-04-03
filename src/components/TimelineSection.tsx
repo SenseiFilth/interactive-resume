@@ -62,16 +62,19 @@ const NODE_POS = [
 
 // [fromIdx, toIdx, drawStart, drawEnd, isPrimary]
 const LINES: readonly [number, number, number, number, boolean][] = [
-  [0, 1, 0.20, 0.30, true ],
-  [1, 2, 0.44, 0.54, true ],
-  [2, 3, 0.68, 0.78, true ],
-  [0, 2, 0.52, 0.62, false],
-  [1, 3, 0.76, 0.86, false],
+  [0, 1, 0.14, 0.22, true ],
+  [1, 2, 0.30, 0.38, true ],
+  [2, 3, 0.46, 0.54, true ],
+  [0, 2, 0.36, 0.44, false],
+  [1, 3, 0.58, 0.65, false],
 ] as const;
 
 /* ══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
-   300vh outer → sticky 100vh viewport (was 500vh — 40% faster)
+   350vh outer → sticky 100vh viewport
+   All 4 nodes sequence within the first ~65% of scroll progress.
+   The remaining 35% is a "fully lit" resting phase where all nodes
+   glow simultaneously before the section exits.
    scrollYProgress drives nodes/lines/content directly (no spring lag)
    camSpring (stiffness:150) used ONLY for camera drift
    ══════════════════════════════════════════════════════════════════ */
@@ -107,60 +110,65 @@ export default function TimelineSection() {
   const farY  = useTransform(camSpring, [0, 1], ["0%", "-2%" ]);
 
   // ── Header fades as user traverses ──────────────────────────────────────
-  const headerOp = useTransform(scrollYProgress, [0, 0.04, 0.12], [1, 1, 0]);
+  const headerOp = useTransform(scrollYProgress, [0, 0.03, 0.09], [1, 1, 0]);
 
-  // ── Node opacity: ghost → full glow → SUSTAINED (never fades back) ──────
-  // After departure each node holds at 0.55 so visited nodes keep their glow
+  // ── Node opacity: ghost → full glow → SUSTAINED ──────────────────────────
+  // All 4 nodes complete their entry by ~0.65 scroll progress.
+  // Each holds at 0.65 opacity so the full constellation stays lit.
+  //
+  // With 350vh total: n3 fully visible at 0.56 × 350 = 196vh (~2 screens)
+  // Remaining 154vh is the "all nodes lit" finale before section exits.
   const n0 = useTransform(scrollYProgress,
-    [0.00, 0.06, 0.13, 0.22, 1.00],
-    [0.12, 1.00, 1.00, 0.55, 0.55]);
+    [0.00, 0.05, 0.13, 0.20, 1.00],
+    [0.12, 1.00, 1.00, 0.65, 0.65]);
   const n1 = useTransform(scrollYProgress,
-    [0.00, 0.26, 0.34, 0.43, 0.52, 1.00],
-    [0.06, 0.06, 1.00, 1.00, 0.55, 0.55]);
+    [0.00, 0.18, 0.26, 0.33, 0.40, 1.00],
+    [0.06, 0.06, 1.00, 1.00, 0.65, 0.65]);
   const n2 = useTransform(scrollYProgress,
-    [0.00, 0.50, 0.58, 0.67, 0.76, 1.00],
-    [0.03, 0.03, 1.00, 1.00, 0.55, 0.55]);
+    [0.00, 0.32, 0.40, 0.47, 0.54, 1.00],
+    [0.03, 0.03, 1.00, 1.00, 0.65, 0.65]);
   const n3 = useTransform(scrollYProgress,
-    [0.00, 0.74, 0.82, 1.00],
-    [0.01, 0.01, 1.00, 1.00]);
+    [0.00, 0.48, 0.56, 0.70, 1.00],
+    [0.01, 0.01, 1.00, 1.00, 1.00]);
 
-  // ── Node scale: pop on arrival → settled → sustained (no ghost shrink) ──
+  // ── Node scale ───────────────────────────────────────────────────────────
   const s0 = useTransform(scrollYProgress,
-    [0.00, 0.06, 0.13, 0.22, 1.00],
-    [0.45, 1.35, 1.00, 0.72, 0.72]);
+    [0.00, 0.05, 0.13, 0.20, 1.00],
+    [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s1 = useTransform(scrollYProgress,
-    [0.26, 0.34, 0.43, 0.52, 1.00],
-    [0.45, 1.35, 1.00, 0.72, 0.72]);
+    [0.18, 0.26, 0.33, 0.40, 1.00],
+    [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s2 = useTransform(scrollYProgress,
-    [0.50, 0.58, 0.67, 0.76, 1.00],
-    [0.45, 1.35, 1.00, 0.72, 0.72]);
+    [0.32, 0.40, 0.47, 0.54, 1.00],
+    [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s3 = useTransform(scrollYProgress,
-    [0.74, 0.82, 0.91, 1.00],
+    [0.48, 0.56, 0.65, 1.00],
     [0.45, 1.35, 1.00, 1.00]);
 
-  // ── Content panel opacity: fades in, active window, then persists at 0.5 ─
+  // ── Content panel opacity — active window then persists at 0.5 ───────────
+  // n3 stays full (last card should always be readable at section end)
   const c0 = useTransform(scrollYProgress,
-    [0.06, 0.11, 0.20, 0.26, 1.00],
+    [0.04, 0.08, 0.14, 0.20, 1.00],
     [0,    1,    1,    0.50, 0.50]);
   const c1 = useTransform(scrollYProgress,
-    [0.31, 0.36, 0.45, 0.52, 1.00],
+    [0.17, 0.21, 0.27, 0.34, 1.00],
     [0,    1,    1,    0.50, 0.50]);
   const c2 = useTransform(scrollYProgress,
-    [0.55, 0.60, 0.69, 0.76, 1.00],
+    [0.31, 0.35, 0.41, 0.48, 1.00],
     [0,    1,    1,    0.50, 0.50]);
   const c3 = useTransform(scrollYProgress,
-    [0.79, 0.84, 1.00],
-    [0,    1,    1   ]);
+    [0.47, 0.52, 0.68, 1.00],
+    [0,    1,    1,    1.00]);
 
-  // ── Constellation lines — draw AFTER node arrives ────────────────────────
-  const l01 = useTransform(scrollYProgress, [0.20, 0.30], [0, 1]);
-  const l12 = useTransform(scrollYProgress, [0.44, 0.54], [0, 1]);
-  const l23 = useTransform(scrollYProgress, [0.68, 0.78], [0, 1]);
-  const l02 = useTransform(scrollYProgress, [0.52, 0.62], [0, 1]);
-  const l13 = useTransform(scrollYProgress, [0.76, 0.86], [0, 1]);
+  // ── Constellation lines ───────────────────────────────────────────────────
+  const l01 = useTransform(scrollYProgress, [0.14, 0.22], [0, 1]);
+  const l12 = useTransform(scrollYProgress, [0.30, 0.38], [0, 1]);
+  const l23 = useTransform(scrollYProgress, [0.46, 0.54], [0, 1]);
+  const l02 = useTransform(scrollYProgress, [0.36, 0.44], [0, 1]);
+  const l13 = useTransform(scrollYProgress, [0.58, 0.65], [0, 1]);
   const linePaths = [l01, l12, l23, l02, l13];
 
-  const scrollCueOp = useTransform(scrollYProgress, [0, 0.04, 0.10], [1, 1, 0]);
+  const scrollCueOp = useTransform(scrollYProgress, [0, 0.03, 0.08], [1, 1, 0]);
 
   const nodeOpacity = [n0, n1, n2, n3];
   const nodeScale   = [s0, s1, s2, s3];
@@ -181,9 +189,9 @@ export default function TimelineSection() {
   );
 
   return (
-    // 300vh — was 500vh; tighter window means all 4 nodes play through
-    // before the section exits the viewport
-    <div ref={containerRef} className="relative" style={{ height: "300vh" }}>
+    // 350vh total. Nodes 0-3 all fully lit by ~65% progress (≈227vh).
+    // Remaining ~123vh is a "full constellation" resting phase.
+    <div ref={containerRef} className="relative" style={{ height: "350vh" }}>
 
       {/* Sticky viewport */}
       <div
