@@ -155,11 +155,13 @@ export default function TimelineSection() {
   const c1 = useTransform(scrollYProgress,
     [0.17, 0.21, 0.27, 0.34, 1.00],
     [0,    1,    1,    0.50, 0.50]);
+  // c2 starts at 0.40 — n2 scale peak (line l12 finishes at 0.38, node pops at 0.40)
   const c2 = useTransform(scrollYProgress,
-    [0.31, 0.35, 0.41, 0.48, 1.00],
+    [0.40, 0.44, 0.50, 0.55, 1.00],
     [0,    1,    1,    0.50, 0.50]);
+  // c3 starts at 0.56 — n3 scale peak (line l23 finishes at 0.54, node pops at 0.56)
   const c3 = useTransform(scrollYProgress,
-    [0.47, 0.52, 0.68, 1.00],
+    [0.56, 0.60, 0.70, 1.00],
     [0,    1,    1,    1.00]);
 
   // ── Constellation lines ───────────────────────────────────────────────────
@@ -182,10 +184,10 @@ export default function TimelineSection() {
   // instead of the side-panels, which collide on small screens.
   const [mobileCard, setMobileCard] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if      (v < 0.17) setMobileCard(0);
-    else if (v < 0.31) setMobileCard(1);
-    else if (v < 0.47) setMobileCard(2);
-    else               setMobileCard(3);
+    if      (v < 0.17) setMobileCard(0); // n0 card
+    else if (v < 0.40) setMobileCard(1); // n1 card (was 0.31)
+    else if (v < 0.56) setMobileCard(2); // n2 card (was 0.47) — now matches desktop c2
+    else               setMobileCard(3); // n3 card — now matches desktop c3
   });
 
   const handleMouseMove = useCallback(
