@@ -3,10 +3,12 @@
 import { useRef, useMemo, useCallback, useState } from "react";
 import {
   motion,
+  AnimatePresence,
   useScroll,
   useTransform,
   useSpring,
   useMotionValue,
+  useMotionValueEvent,
 } from "framer-motion";
 import { signalBlocks } from "@/data/content";
 
@@ -173,6 +175,18 @@ export default function TimelineSection() {
   const nodeOpacity = [n0, n1, n2, n3];
   const nodeScale   = [s0, s1, s2, s3];
   const contentOp   = [c0, c1, c2, c3];
+
+  // ── Mobile bottom-strip card tracking ────────────────────────────────────
+  // Switch thresholds match each node's content appearance point.
+  // This drives a single centered card at the bottom of the viewport
+  // instead of the side-panels, which collide on small screens.
+  const [mobileCard, setMobileCard] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if      (v < 0.17) setMobileCard(0);
+    else if (v < 0.31) setMobileCard(1);
+    else if (v < 0.47) setMobileCard(2);
+    else               setMobileCard(3);
+  });
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -403,9 +417,9 @@ export default function TimelineSection() {
                       onClick={() => toggleNode(i)}
                     />
 
-                    {/* ── Content panel — widens on expand ── */}
+                    {/* ── Content panel — desktop only (sm+); mobile uses bottom strip ── */}
                     <motion.div
-                      className="absolute cursor-pointer"
+                      className="absolute cursor-pointer hidden sm:block"
                       animate={{ width: isExpanded ? 264 : 212 }}
                       initial={{ width: 212 }}
                       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
@@ -503,9 +517,111 @@ export default function TimelineSection() {
           </motion.div>
         </motion.div>
 
-        {/* ── Scroll cue ── */}
+        {/* ══════════════════════════════════════════════════════════════
+            MOBILE CARD STRIP — sm:hidden
+            Single centered card at bottom of viewport. Swaps cleanly
+            between the 4 nodes as scroll progresses. Avoids all the
+            side-panel collision that happens on small screens.
+            ══════════════════════════════════════════════════════════ */}
+        <div className="sm:hidden absolute bottom-0 left-0 right-0 z-40 px-4 pb-6 pt-3"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.95) 60%, transparent 100%)",
+          }}
+        >
+          {/* Progress bar — shows which of the 4 nodes is active */}
+          <div className="mb-3 flex justify-center gap-2">
+            {signalBlocks.map((_, i) => (
+              <div
+                key={i}
+                className="h-[2px] rounded-full transition-all duration-300"
+                style={{
+                  width:      i === mobileCard ? "20px" : "6px",
+                  background: i === mobileCard
+                    ? "rgba(220,20,60,0.85)"
+                    : "rgba(255,255,255,0.15)",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Active card — fades between nodes */}
+          <AnimatePresence mode="wait">
+            {signalBlocks.map((block, i) =>
+              i !== mobileCard ? null : (
+                <motion.div
+                  key={block.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  <div
+                    style={{
+                      background:     "rgba(6,6,6,0.92)",
+                      backdropFilter: "blur(24px)",
+                      border:         "1px solid rgba(220,20,60,0.18)",
+                      borderTop:      "2px solid rgba(220,20,60,0.55)",
+                      padding:        "14px 16px",
+                    }}
+                  >
+                    {/* Index + counter */}
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <p className="font-mono text-[8px] tracking-[0.4em] text-crimson/55 uppercase">
+                        {block.index}
+                      </p>
+                      <span className="font-mono text-[8px] tracking-wider text-white/20">
+                        {i + 1} / {signalBlocks.length}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <p
+                      className={`text-sm font-bold tracking-wide text-white leading-snug${
+                        block.glitch ? " glitch-text" : ""
+                      }`}
+                    >
+                      {block.title}
+                    </p>
+
+                    {/* Signals */}
+                    <ul className="mt-2 flex flex-col gap-1.5">
+                      {block.signals.map((sig, j) => (
+                        <li
+                          key={j}
+                          className="flex items-start gap-2 text-xs leading-tight text-white/50"
+                        >
+                          <span
+                            className="mt-[5px] shrink-0 rounded-full bg-crimson/55"
+                            style={{ width: "3px", height: "3px" }}
+                          />
+                          {sig}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Detail */}
+                    {block.detail && (
+                      <p
+                        className="mt-2 text-[10px] italic leading-relaxed text-white/30"
+                        style={{
+                          borderTop:  "1px solid rgba(220,20,60,0.08)",
+                          paddingTop: "8px",
+                        }}
+                      >
+                        {block.detail}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ── Scroll cue — hidden on mobile (card strip uses bottom space) ── */}
         <motion.div
-          className="pointer-events-none absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-2 select-none"
+          className="pointer-events-none absolute bottom-8 left-1/2 z-30 hidden sm:flex -translate-x-1/2 flex-col items-center gap-2 select-none"
           style={{ opacity: scrollCueOp }}
         >
           <span className="font-mono text-[9px] tracking-[0.45em] text-white/25 uppercase">
@@ -518,8 +634,8 @@ export default function TimelineSection() {
           />
         </motion.div>
 
-        {/* ── Node progress dots (bottom-right) ── */}
-        <div className="pointer-events-none absolute bottom-8 right-8 z-30 flex flex-col gap-3">
+        {/* ── Node progress dots (bottom-right) — desktop only ── */}
+        <div className="pointer-events-none absolute bottom-8 right-8 z-30 hidden sm:flex flex-col gap-3">
           {signalBlocks.map((_, i) => (
             <motion.div
               key={i}
