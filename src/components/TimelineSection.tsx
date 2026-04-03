@@ -520,113 +520,125 @@ export default function TimelineSection() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            MOBILE FLOATING CARD — sm:hidden
-            Centered glass panel that floats above the constellation.
-            No full-bleed backgrounds — the card belongs to the scene.
+            MOBILE SIGNAL READOUT — sm:hidden
+            No box. No border. Text projected INTO the constellation.
+            Anchored bottom:0 (fixed px container) so iOS viewport
+            height changes never shift it regardless of scroll depth.
             ══════════════════════════════════════════════════════════ */}
         <div
-          className="sm:hidden absolute z-40"
-          style={{ bottom: "44px", left: "16px", right: "16px" }}
+          className="sm:hidden pointer-events-none absolute inset-x-0 bottom-0 z-40"
+          style={{ height: "290px" }}
         >
-          {/* Node progress dots — glowing when active */}
-          <div className="mb-3 flex items-center justify-center gap-3">
-            {signalBlocks.map((_, i) => (
-              <div
-                key={i}
-                className="rounded-full transition-all duration-500"
-                style={{
-                  width:      i === mobileCard ? "6px"  : "4px",
-                  height:     i === mobileCard ? "6px"  : "4px",
-                  background: i === mobileCard
-                    ? "rgba(220,20,60,0.90)"
-                    : "rgba(255,255,255,0.18)",
-                  boxShadow:  i === mobileCard
-                    ? "0 0 8px rgba(220,20,60,0.7), 0 0 16px rgba(220,20,60,0.3)"
-                    : "none",
-                }}
-              />
-            ))}
-          </div>
+          {/* Atmospheric dark gradient — readability without boxing */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 45%, transparent 100%)",
+            }}
+          />
 
-          {/* Floating glass card */}
-          <AnimatePresence mode="wait">
-            {signalBlocks.map((block, i) =>
-              i !== mobileCard ? null : (
-                <motion.div
-                  key={block.id}
-                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0,   scale: 1    }}
-                  exit={{    opacity: 0, y: -6,   scale: 0.98 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {/* Outer glow ring — ties card to constellation color language */}
-                  <div
-                    style={{
-                      background:     "rgba(4,4,4,0.92)",
-                      backdropFilter: "blur(28px)",
-                      WebkitBackdropFilter: "blur(28px)",
-                      border:         "1px solid rgba(220,20,60,0.20)",
-                      borderTop:      "2px solid rgba(220,20,60,0.65)",
-                      boxShadow: [
-                        "0 0 0 1px rgba(255,255,255,0.03)",
-                        "0 -8px 32px rgba(220,20,60,0.07)",
-                        "0 16px 48px rgba(0,0,0,0.65)",
-                      ].join(", "),
-                      padding: "18px 20px 20px",
-                    }}
+          {/* Readout content — absolutely positioned from bottom */}
+          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-9">
+
+            {/* Progress dots */}
+            <div className="mb-5 flex items-center gap-3">
+              {signalBlocks.map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-full transition-all duration-500"
+                  style={{
+                    width:      i === mobileCard ? "6px"  : "4px",
+                    height:     i === mobileCard ? "6px"  : "4px",
+                    background: i === mobileCard
+                      ? "rgba(220,20,60,0.90)"
+                      : "rgba(255,255,255,0.18)",
+                    boxShadow:  i === mobileCard
+                      ? "0 0 8px rgba(220,20,60,0.7), 0 0 20px rgba(220,20,60,0.3)"
+                      : "none",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Signal readout — pure typography, no container */}
+            <AnimatePresence mode="wait">
+              {signalBlocks.map((block, i) =>
+                i !== mobileCard ? null : (
+                  <motion.div
+                    key={block.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{    opacity: 0 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="flex flex-col items-center text-center px-10 w-full"
                   >
-                    {/* Index label + counter */}
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="font-mono text-[8px] tracking-[0.45em] text-crimson/55 uppercase">
-                        {block.index}
-                      </p>
-                      <span className="font-mono text-[8px] tracking-wider text-white/20">
-                        {i + 1}&thinsp;/&thinsp;{signalBlocks.length}
-                      </span>
-                    </div>
+                    {/* Index label */}
+                    <motion.p
+                      initial={{ opacity: 0, letterSpacing: "0.2em" }}
+                      animate={{ opacity: 1, letterSpacing: "0.5em" }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="font-mono text-[8px] text-crimson/65 uppercase mb-2"
+                    >
+                      {block.index}
+                    </motion.p>
 
                     {/* Title */}
-                    <p
-                      className={`text-base font-bold tracking-wide text-white leading-snug${
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: 0.08 }}
+                      className={`text-[19px] font-bold tracking-tight text-white leading-tight${
                         block.glitch ? " glitch-text" : ""
                       }`}
                     >
                       {block.title}
-                    </p>
+                    </motion.p>
 
-                    {/* Signals */}
-                    <ul className="mt-3 flex flex-col gap-2">
+                    {/* Animated separator — draws outward from center */}
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ duration: 0.5, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="my-3 origin-center"
+                      style={{
+                        width:      "28px",
+                        height:     "1px",
+                        background: "linear-gradient(90deg, transparent, rgba(220,20,60,0.7), transparent)",
+                      }}
+                    />
+
+                    {/* Signals — staggered reveal */}
+                    <div className="flex flex-col items-center gap-1.5">
                       {block.signals.map((sig, j) => (
-                        <li
+                        <motion.p
                           key={j}
-                          className="flex items-start gap-2.5 text-[12px] leading-snug text-white/55"
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.22 + j * 0.09, duration: 0.3 }}
+                          className="text-[11px] tracking-wider text-white/50"
                         >
-                          <span
-                            className="mt-[5px] shrink-0 rounded-full bg-crimson/60"
-                            style={{ width: "3px", height: "3px" }}
-                          />
                           {sig}
-                        </li>
+                        </motion.p>
                       ))}
-                    </ul>
+                    </div>
 
-                    {/* Detail */}
+                    {/* Detail — fades in last */}
                     {block.detail && (
-                      <p
-                        className="mt-3 text-[10px] italic leading-relaxed text-white/35"
-                        style={{
-                          borderTop:  "1px solid rgba(220,20,60,0.10)",
-                          paddingTop: "10px",
-                        }}
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.45, duration: 0.4 }}
+                        className="mt-2.5 text-[9px] italic text-white/28 tracking-wide max-w-[240px]"
                       >
                         {block.detail}
-                      </p>
+                      </motion.p>
                     )}
-                  </div>
-                </motion.div>
-              )
-            )}
-          </AnimatePresence>
+                  </motion.div>
+                )
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* ── Scroll cue — desktop only ── */}
