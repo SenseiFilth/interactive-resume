@@ -21,7 +21,7 @@ export default function CurrentState() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-black px-4 py-32"
+      className="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-4 py-32"
     >
       {/* Background glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(220,20,60,0.04)_0%,_transparent_60%)]" />

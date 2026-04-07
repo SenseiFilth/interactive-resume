@@ -6,7 +6,7 @@ import RoleCard from "./RoleCard";
 
 export default function ExperienceSection() {
   return (
-    <section className="relative bg-black px-4 py-32">
+    <section className="relative px-4 py-32">
       {/* Subtle ambient glow behind the section */}
       <div
         className="pointer-events-none absolute inset-0"

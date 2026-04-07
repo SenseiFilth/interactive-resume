@@ -6,7 +6,7 @@ import ProjectCard from "./ProjectCard";
 
 export default function ProjectsSection() {
   return (
-    <section className="bg-black px-4 py-32">
+    <section className="relative px-4 py-32">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}

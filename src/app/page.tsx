@@ -20,13 +20,46 @@ const FADE = {
 export default function Home() {
   const [viewMode, setViewMode] = useState<ViewMode>("creative");
 
-  // Single stable callback — no duplicate state anywhere
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
   }, []);
 
   return (
     <>
+      {/* ── Fixed ambient video background ────────────────────────────
+          Sits behind everything. TimelineSection masks itself with a
+          solid bg. All other sections use transparent/semi-transparent
+          backgrounds so this bleeds through.
+      ──────────────────────────────────────────────────────────────── */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.18]"
+          style={{ filter: "saturate(1.4) brightness(0.85)" }}
+        >
+          <source src="/videos/ambient-bg.mp4" type="video/mp4" />
+        </video>
+        {/* Deep vignette keeps edges cinematic */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(0,0,0,0.75) 100%)",
+          }}
+        />
+        {/* Subtle red tint overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 0%, rgba(220,20,60,0.04) 0%, transparent 60%)",
+          }}
+        />
+      </div>
+
       <HeroSection viewMode={viewMode} onViewModeChange={handleViewModeChange} />
 
       <AnimatePresence mode="wait">
@@ -45,7 +78,7 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Global footer */}
-      <footer className="border-t border-white/[0.04] py-12 text-center">
+      <footer className="relative border-t border-white/[0.04] py-12 text-center">
         <p className="font-mono text-[10px] tracking-widest text-steel/30 uppercase">
           &ldquo;Inside, I am infinite&rdquo; &mdash; Miyamoto Musashi
         </p>

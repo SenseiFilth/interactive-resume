@@ -98,7 +98,7 @@ export default function HeroSection({
   }, [handleScroll]);
 
   return (
-    <section className="relative flex h-screen items-center justify-center overflow-hidden bg-black">
+    <section className="relative flex h-screen items-center justify-center overflow-hidden">
       {/* Radial red glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(220,20,60,0.05)_0%,_transparent_70%)]" />
 
