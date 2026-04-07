@@ -145,23 +145,6 @@ export default function TimelineSection() {
     [0.00, 0.46, 0.54, 0.62, 1.00],
     [0.45, 0.45, 1.35, 1.00, 1.00]);
 
-  // ── Content panel opacity — active window then persists at 0.5 ───────────
-  // n3 stays full (last card should always be readable at section end)
-  const c0 = useTransform(scrollYProgress,
-    [0.04, 0.08, 0.14, 0.20, 1.00],
-    [0,    1,    1,    0.50, 0.50]);
-  const c1 = useTransform(scrollYProgress,
-    [0.17, 0.21, 0.27, 0.34, 1.00],
-    [0,    1,    1,    0.50, 0.50]);
-  // c2 starts at 0.38 — l12 finishes at 0.38, n2 pops simultaneously
-  const c2 = useTransform(scrollYProgress,
-    [0.38, 0.42, 0.48, 0.53, 1.00],
-    [0,    1,    1,    0.50, 0.50]);
-  // c3 starts at 0.54 — l23 finishes at 0.54, n3 pops simultaneously
-  const c3 = useTransform(scrollYProgress,
-    [0.54, 0.58, 0.68, 1.00],
-    [0,    1,    1,    1.00]);
-
   // ── Constellation lines ───────────────────────────────────────────────────
   const l01 = useTransform(scrollYProgress, [0.14, 0.22], [0, 1]);
   const l12 = useTransform(scrollYProgress, [0.30, 0.38], [0, 1]);
@@ -174,9 +157,8 @@ export default function TimelineSection() {
 
   const nodeOpacity = [n0, n1, n2, n3];
   const nodeScale   = [s0, s1, s2, s3];
-  const contentOp   = [c0, c1, c2, c3];
 
-  // ── Mobile bottom-strip card tracking ────────────────────────────────────
+  // ── Active card tracking — drives the unified bottom readout ─────────────
   // Switch thresholds match each node's content appearance point.
   // This drives a single centered card at the bottom of the viewport
   // instead of the side-panels, which collide on small screens.
@@ -206,7 +188,11 @@ export default function TimelineSection() {
           Stars and the red network video share the same visual language:
           points of light on dark. No hard edge, no black block. */}
       <div
-        className="sticky top-0 h-screen overflow-hidden bg-transparent"
+        className="sticky top-0 h-screen bg-transparent"
+        style={{
+          maskImage: "linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)",
+        }}
         onMouseMove={handleMouseMove}
       >
         {/* ── Section label — fades as you traverse ── */}
@@ -325,8 +311,6 @@ export default function TimelineSection() {
             {/* ── Nodes — zero-size anchors ── */}
             {signalBlocks.map((block, i) => {
               const pos    = NODE_POS[i];
-              const isLeft = pos.x < 50;
-
               return (
                 <div
                   key={block.id}
@@ -410,82 +394,6 @@ export default function TimelineSection() {
                       }}
                     />
 
-                    {/* ── Floating text — desktop only (sm+) ── */}
-                    <motion.div
-                      className="absolute pointer-events-none hidden sm:block"
-                      style={{
-                        ...(isLeft ? { left: "18px" } : { right: "18px" }),
-                        top:     "0px",
-                        y:       "-50%",
-                        opacity: contentOp[i],
-                        width:   "200px",
-                        ...(isLeft ? {} : { textAlign: "right" }),
-                      }}
-                    >
-                      {/* Soft radial scrim — readability without a box */}
-                      <div
-                        className="pointer-events-none absolute"
-                        style={{
-                          inset: "-20px -28px",
-                          background: isLeft
-                            ? "radial-gradient(ellipse at 15% 50%, rgba(0,0,0,0.65) 0%, transparent 72%)"
-                            : "radial-gradient(ellipse at 85% 50%, rgba(0,0,0,0.65) 0%, transparent 72%)",
-                        }}
-                      />
-
-                      <div style={{ position: "relative" }}>
-                        {/* Index */}
-                        <p className="font-mono text-[7px] tracking-[0.55em] uppercase mb-1.5"
-                           style={{ color: "rgba(220,20,60,0.60)" }}>
-                          {block.index}
-                        </p>
-
-                        {/* Title */}
-                        <p
-                          className={`text-[13px] font-bold text-white leading-snug tracking-wide${
-                            block.glitch ? " glitch-text" : ""
-                          }`}
-                        >
-                          {block.title}
-                        </p>
-
-                        {/* Separator */}
-                        <div
-                          className="my-2"
-                          style={{
-                            width:      "20px",
-                            height:     "1px",
-                            background: isLeft
-                              ? "linear-gradient(90deg, rgba(220,20,60,0.65), transparent)"
-                              : "linear-gradient(270deg, rgba(220,20,60,0.65), transparent)",
-                            marginLeft: isLeft ? 0 : "auto",
-                          }}
-                        />
-
-                        {/* Signals */}
-                        <div className="flex flex-col gap-1">
-                          {block.signals.map((sig, j) => (
-                            <p
-                              key={j}
-                              className="text-[9px] leading-relaxed tracking-wide"
-                              style={{ color: "rgba(255,255,255,0.42)" }}
-                            >
-                              {sig}
-                            </p>
-                          ))}
-                        </div>
-
-                        {/* Detail */}
-                        {block.detail && (
-                          <p
-                            className="mt-2 text-[8px] italic leading-relaxed tracking-wide"
-                            style={{ color: "rgba(255,255,255,0.22)" }}
-                          >
-                            {block.detail}
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
 
                   </motion.div>
                 </div>
@@ -496,46 +404,46 @@ export default function TimelineSection() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            MOBILE SIGNAL READOUT — sm:hidden
-            No box. No border. Text projected INTO the constellation.
-            Anchored bottom:0 (fixed px container) so iOS viewport
-            height changes never shift it regardless of scroll depth.
+            SIGNAL READOUT — all screens
+            Text projected INTO the constellation. No box, no border.
+            Unified layout: mobile and desktop share the same strip,
+            scaled up via responsive classes on desktop.
             ══════════════════════════════════════════════════════════ */}
         <div
-          className="sm:hidden pointer-events-none absolute inset-x-0 bottom-0 z-40"
-          style={{ height: "290px" }}
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-40"
+          style={{ height: "clamp(280px, 36vh, 400px)" }}
         >
-          {/* Atmospheric dark gradient — readability without boxing */}
+          {/* Deep atmospheric fade — pulls text out of the star field */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 45%, transparent 100%)",
+                "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, transparent 100%)",
             }}
           />
 
-          {/* Progress dots — fixed at bottom, never shifts */}
-          <div className="absolute inset-x-0 bottom-9 flex justify-center items-center gap-3">
+          {/* Progress indicator — centered, scales with screen */}
+          <div className="absolute inset-x-0 bottom-8 sm:bottom-10 flex justify-center items-center gap-3 sm:gap-4">
             {signalBlocks.map((_, i) => (
               <div
                 key={i}
                 className="rounded-full transition-all duration-500"
                 style={{
-                  width:      i === mobileCard ? "6px"  : "4px",
-                  height:     i === mobileCard ? "6px"  : "4px",
+                  width:      i === mobileCard ? "7px"  : "4px",
+                  height:     i === mobileCard ? "7px"  : "4px",
                   background: i === mobileCard
                     ? "rgba(220,20,60,0.90)"
-                    : "rgba(255,255,255,0.18)",
+                    : "rgba(255,255,255,0.15)",
                   boxShadow:  i === mobileCard
-                    ? "0 0 8px rgba(220,20,60,0.7), 0 0 20px rgba(220,20,60,0.3)"
+                    ? "0 0 8px rgba(220,20,60,0.7), 0 0 22px rgba(220,20,60,0.3)"
                     : "none",
                 }}
               />
             ))}
           </div>
 
-          {/* Signal readout — top-anchored so all 4 cards start at the same height */}
-          <div className="absolute inset-x-0 top-[40px] flex justify-center">
+          {/* Content — top-anchored for consistent entry position */}
+          <div className="absolute inset-x-0 top-[36px] sm:top-[48px] flex justify-center">
             <AnimatePresence mode="wait">
               {signalBlocks.map((block, i) =>
                 i !== mobileCard ? null : (
@@ -544,66 +452,66 @@ export default function TimelineSection() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{    opacity: 0 }}
-                    transition={{ duration: 0.35, ease: "easeOut" }}
-                    className="flex flex-col items-center text-center px-10 w-full"
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="flex flex-col items-center text-center w-full px-8 sm:px-0 sm:max-w-[480px]"
                   >
-                    {/* Index label */}
+                    {/* Index */}
                     <motion.p
-                      initial={{ opacity: 0, letterSpacing: "0.2em" }}
-                      animate={{ opacity: 1, letterSpacing: "0.5em" }}
-                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      className="font-mono text-[8px] text-crimson/65 uppercase mb-2"
+                      initial={{ opacity: 0, letterSpacing: "0.15em" }}
+                      animate={{ opacity: 1, letterSpacing: "0.55em" }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="font-mono text-[8px] sm:text-[9px] text-crimson/60 uppercase mb-2 sm:mb-3"
                     >
                       {block.index}
                     </motion.p>
 
                     {/* Title */}
                     <motion.p
-                      initial={{ opacity: 0, y: 5 }}
+                      initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, delay: 0.08 }}
-                      className={`text-[19px] font-bold tracking-tight text-white leading-tight${
+                      transition={{ duration: 0.4, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                      className={`text-[20px] sm:text-[30px] font-bold tracking-tight text-white leading-tight${
                         block.glitch ? " glitch-text" : ""
                       }`}
                     >
                       {block.title}
                     </motion.p>
 
-                    {/* Animated separator — draws outward from center */}
+                    {/* Separator — draws outward */}
                     <motion.div
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: 1 }}
-                      transition={{ duration: 0.5, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                      className="my-3 origin-center"
+                      transition={{ duration: 0.55, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                      className="my-3 sm:my-4 origin-center"
                       style={{
-                        width:      "28px",
+                        width:      "32px",
                         height:     "1px",
-                        background: "linear-gradient(90deg, transparent, rgba(220,20,60,0.7), transparent)",
+                        background: "linear-gradient(90deg, transparent, rgba(220,20,60,0.65), transparent)",
                       }}
                     />
 
-                    {/* Signals — staggered reveal */}
-                    <div className="flex flex-col items-center gap-1.5">
+                    {/* Signals — staggered */}
+                    <div className="flex flex-col items-center gap-1.5 sm:gap-2">
                       {block.signals.map((sig, j) => (
                         <motion.p
                           key={j}
-                          initial={{ opacity: 0, y: 4 }}
+                          initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.22 + j * 0.09, duration: 0.3 }}
-                          className="text-[11px] tracking-wider text-white/50"
+                          transition={{ delay: 0.24 + j * 0.09, duration: 0.32 }}
+                          className="text-[11px] sm:text-[12px] tracking-wider text-white/45 leading-relaxed"
                         >
                           {sig}
                         </motion.p>
                       ))}
                     </div>
 
-                    {/* Detail — fades in last */}
+                    {/* Detail */}
                     {block.detail && (
                       <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 0.45, duration: 0.4 }}
-                        className="mt-2.5 text-[9px] italic text-white/28 tracking-wide max-w-[240px]"
+                        transition={{ delay: 0.5, duration: 0.45 }}
+                        className="mt-3 text-[9px] sm:text-[10px] italic text-white/25 tracking-wide max-w-[260px] sm:max-w-[340px] leading-relaxed"
                       >
                         {block.detail}
                       </motion.p>
@@ -614,38 +522,22 @@ export default function TimelineSection() {
             </AnimatePresence>
           </div>
         </div>
-        {/* end mobile readout */}
+        {/* end signal readout */}
 
-        {/* ── Scroll cue — desktop only ── */}
+        {/* ── Scroll cue — fades at section start, top-left to avoid readout ── */}
         <motion.div
-          className="pointer-events-none absolute bottom-8 left-1/2 z-30 hidden sm:flex -translate-x-1/2 flex-col items-center gap-2 select-none"
+          className="pointer-events-none absolute top-8 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-2 select-none"
           style={{ opacity: scrollCueOp }}
         >
-          <span className="font-mono text-[9px] tracking-[0.45em] text-white/25 uppercase">
-            Scroll to traverse
-          </span>
           <motion.div
             animate={{ y: [0, 7, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="h-7 w-[1px] bg-gradient-to-b from-crimson/40 to-transparent"
           />
+          <span className="font-mono text-[9px] tracking-[0.45em] text-white/20 uppercase">
+            Scroll to traverse
+          </span>
         </motion.div>
-
-        {/* ── Node progress dots (bottom-right) — desktop only ── */}
-        <div className="pointer-events-none absolute bottom-8 right-8 z-30 hidden sm:flex flex-col gap-3">
-          {signalBlocks.map((_, i) => (
-            <motion.div
-              key={i}
-              className="rounded-full"
-              style={{
-                width:      "4px",
-                height:     "4px",
-                background: "rgba(220,20,60,0.85)",
-                opacity:    nodeOpacity[i],
-              }}
-            />
-          ))}
-        </div>
 
       </div>
     </div>

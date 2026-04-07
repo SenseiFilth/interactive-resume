@@ -22,7 +22,7 @@ const STATUS_MODULES = [
   {
     index: "03",
     label: "Live Production",
-    value: "Lighting / AV / Events — 4 yrs",
+    value: "Lighting / AV / Events",
     status: "ACTIVE",
   },
 ] as const;
@@ -175,7 +175,7 @@ export default function CurrentState() {
             }}
           >
             <p className="font-mono text-[9px] leading-relaxed tracking-wide text-white/28 italic">
-              Designing across digital interfaces and physical environments where systems and execution meet.
+              Designing and building systems across web, software, AI tools, and live production environments.
             </p>
           </motion.div>
 
