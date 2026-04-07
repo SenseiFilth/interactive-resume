@@ -29,50 +29,48 @@ export const signalBlocks: SignalBlock[] = [
   {
     id: "deconstruct",
     index: "01",
-    title: "Built to Deconstruct",
+    title: "System Deconstruction",
     signals: [
-      "First design concepts",
-      "Discovering inspect element",
-      "Reverse engineering live websites",
+      "Inspect element as the first tool",
+      "Reverse-engineering live websites",
+      "Breaking interfaces to see structure",
     ],
-    detail:
-      "Curiosity wasn't a phase — it was the operating system. Took apart everything to understand what made it work.",
+    detail: "Curiosity wasn't passive — it was investigative.",
     glitch: true,
   },
   {
     id: "creative",
     index: "02",
-    title: "Creative Systems",
+    title: "Creative Systems Thinking",
     signals: [
-      "Graffiti and street art",
-      "Graphic design",
-      "Clothing brand",
-      "Video editing / visual production",
+      "Graffiti → spatial composition",
+      "Graphic design → visual hierarchy",
+      "Clothing brand → identity systems",
+      "Video → sequencing + narrative",
     ],
-    detail:
-      "Art was never separate from systems. Every creative output was a design problem — structure, hierarchy, execution.",
+    detail: "Not art vs. systems — art as systems.",
   },
   {
     id: "realworld",
     index: "03",
-    title: "Real-World Systems",
+    title: "Real-World Operations",
     signals: [
-      "Baucom's: discipline",
-      "IATSE 322: live production pressure",
-      "Wild West: execution at scale",
+      "Baucom's → discipline + physical workflow",
+      "IATSE 322 → live production timing",
+      "Field work → execution under pressure",
     ],
-    detail:
-      "Every environment was a system to decode. From plant nurseries to concert stages — each role built a new layer of operational thinking.",
+    detail: "Every environment revealed operational structure.",
   },
   {
     id: "intelligent",
     index: "04",
-    title: "Intelligent Systems",
+    title: "Intelligent Systems Design",
     signals: [
-      "Aether AI: LLM evaluation",
-      "TruChain: ERP + compliance",
-      "CUE.AI: AI production tools",
+      "Aether AI → LLM evaluation frameworks",
+      "TruChain → ERP + compliance infrastructure",
+      "CUE.AI → AI-assisted production tooling",
     ],
+    detail: "Shift from participant → architect.",
   },
 ];
 

@@ -82,8 +82,6 @@ const LINES: readonly [number, number, number, number, boolean][] = [
    ══════════════════════════════════════════════════════════════════ */
 export default function TimelineSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  // null = no card expanded; number = that node index is expanded
-  const [expandedNode, setExpandedNode] = useState<number | null>(null);
 
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
@@ -199,39 +197,16 @@ export default function TimelineSection() {
     [mouseX, mouseY]
   );
 
-  const toggleNode = useCallback(
-    (i: number) => setExpandedNode((prev) => (prev === i ? null : i)),
-    []
-  );
-
   return (
     // 350vh total. Nodes 0-3 all fully lit by ~65% progress (≈227vh).
     // Remaining ~123vh is a "full constellation" resting phase.
     <div ref={containerRef} className="relative" style={{ height: "350vh" }}>
 
-      {/* ── Entry blend — scrolls normally, sits above sticky star field.
-          As the section top reaches the viewport top, this gradient fades
-          from transparent (hero video) into the star-field black. ── */}
+      {/* Sticky viewport — transparent so the ambient video bleeds through.
+          Stars and the red network video share the same visual language:
+          points of light on dark. No hard edge, no black block. */}
       <div
-        className="pointer-events-none absolute top-0 left-0 right-0 z-[60]"
-        style={{
-          height: "220px",
-          background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.96) 100%)",
-        }}
-      />
-
-      {/* ── Exit blend — mirrors entry at the bottom of the 350vh scroll. ── */}
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 z-[60]"
-        style={{
-          height: "220px",
-          background: "linear-gradient(to top, transparent 0%, rgba(0,0,0,0.96) 100%)",
-        }}
-      />
-
-      {/* Sticky viewport */}
-      <div
-        className="sticky top-0 h-screen overflow-hidden bg-black/[0.92]"
+        className="sticky top-0 h-screen overflow-hidden bg-transparent"
         onMouseMove={handleMouseMove}
       >
         {/* ── Section label — fades as you traverse ── */}
@@ -349,9 +324,8 @@ export default function TimelineSection() {
 
             {/* ── Nodes — zero-size anchors ── */}
             {signalBlocks.map((block, i) => {
-              const pos      = NODE_POS[i];
-              const isLeft   = pos.x < 50;
-              const isExpanded = expandedNode === i;
+              const pos    = NODE_POS[i];
+              const isLeft = pos.x < 50;
 
               return (
                 <div
@@ -363,8 +337,7 @@ export default function TimelineSection() {
                     width:    0,
                     height:   0,
                     overflow: "visible",
-                    // Expanded node floats above all others
-                    zIndex:   isExpanded ? 40 : 20,
+                    zIndex:   20,
                   }}
                 >
                   <motion.div
@@ -377,9 +350,9 @@ export default function TimelineSection() {
                       scale:    nodeScale[i],
                     }}
                   >
-                    {/* ── Outer glow blob — clickable hit area ── */}
+                    {/* Outer glow blob */}
                     <div
-                      className="absolute rounded-full cursor-pointer"
+                      className="absolute rounded-full pointer-events-none"
                       style={{
                         width:  "80px",
                         height: "80px",
@@ -388,7 +361,6 @@ export default function TimelineSection() {
                         background:
                           "radial-gradient(circle, rgba(220,20,60,0.30) 0%, transparent 70%)",
                       }}
-                      onClick={() => toggleNode(i)}
                     />
 
                     {/* Pulse ring — primary */}
@@ -425,9 +397,9 @@ export default function TimelineSection() {
                       }}
                     />
 
-                    {/* Core dot — also clickable */}
+                    {/* Core dot */}
                     <div
-                      className="absolute rounded-full bg-crimson cursor-pointer"
+                      className="absolute rounded-full bg-crimson pointer-events-none"
                       style={{
                         width:  "8px",
                         height: "8px",
@@ -436,94 +408,78 @@ export default function TimelineSection() {
                         boxShadow:
                           "0 0 10px rgba(220,20,60,0.95), 0 0 28px rgba(220,20,60,0.4)",
                       }}
-                      onClick={() => toggleNode(i)}
                     />
 
-                    {/* ── Content panel — desktop only (sm+); mobile uses bottom strip ── */}
+                    {/* ── Floating text — desktop only (sm+) ── */}
                     <motion.div
-                      className="absolute cursor-pointer hidden sm:block"
-                      animate={{ width: isExpanded ? 264 : 212 }}
-                      initial={{ width: 212 }}
-                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute pointer-events-none hidden sm:block"
                       style={{
-                        ...(isLeft ? { left: "14px" } : { right: "14px" }),
+                        ...(isLeft ? { left: "18px" } : { right: "18px" }),
                         top:     "0px",
                         y:       "-50%",
                         opacity: contentOp[i],
+                        width:   "200px",
+                        ...(isLeft ? {} : { textAlign: "right" }),
                       }}
-                      onClick={() => toggleNode(i)}
                     >
+                      {/* Soft radial scrim — readability without a box */}
                       <div
+                        className="pointer-events-none absolute"
                         style={{
-                          background:     "rgba(0,0,0,0.90)",
-                          backdropFilter: "blur(20px)",
-                          padding:        "12px 14px",
-                          border:         "1px solid rgba(220,20,60,0.14)",
-                          borderLeft: isLeft
-                            ? "2px solid rgba(220,20,60,0.6)"
-                            : "1px solid rgba(220,20,60,0.14)",
-                          borderRight: !isLeft
-                            ? "2px solid rgba(220,20,60,0.6)"
-                            : "1px solid rgba(220,20,60,0.14)",
-                          // Glow pops the panel visually even at reduced opacity
-                          boxShadow: isExpanded
-                            ? "0 0 32px rgba(220,20,60,0.18), 0 0 64px rgba(220,20,60,0.08)"
-                            : "none",
-                          transition: "box-shadow 0.35s ease",
+                          inset: "-20px -28px",
+                          background: isLeft
+                            ? "radial-gradient(ellipse at 15% 50%, rgba(0,0,0,0.65) 0%, transparent 72%)"
+                            : "radial-gradient(ellipse at 85% 50%, rgba(0,0,0,0.65) 0%, transparent 72%)",
                         }}
-                      >
-                        {/* ── Header row: index label + expand indicator ── */}
-                        <div className="mb-1 flex items-center justify-between gap-2">
-                          <p className="font-mono text-[8px] tracking-[0.4em] text-crimson/55 uppercase">
-                            {block.index}
-                          </p>
-                          {/* + rotates to × on expand */}
-                          <motion.span
-                            animate={{ rotate: isExpanded ? 45 : 0 }}
-                            transition={{ duration: 0.22 }}
-                            className="shrink-0 font-mono text-[12px] leading-none select-none"
-                            style={{ color: "rgba(220,20,60,0.45)" }}
-                          >
-                            +
-                          </motion.span>
-                        </div>
+                      />
+
+                      <div style={{ position: "relative" }}>
+                        {/* Index */}
+                        <p className="font-mono text-[7px] tracking-[0.55em] uppercase mb-1.5"
+                           style={{ color: "rgba(220,20,60,0.60)" }}>
+                          {block.index}
+                        </p>
 
                         {/* Title */}
                         <p
-                          className={`font-bold tracking-wide text-white leading-snug${
+                          className={`text-[13px] font-bold text-white leading-snug tracking-wide${
                             block.glitch ? " glitch-text" : ""
                           }`}
-                          style={{ fontSize: isExpanded ? "13px" : "11px" }}
                         >
                           {block.title}
                         </p>
 
+                        {/* Separator */}
+                        <div
+                          className="my-2"
+                          style={{
+                            width:      "20px",
+                            height:     "1px",
+                            background: isLeft
+                              ? "linear-gradient(90deg, rgba(220,20,60,0.65), transparent)"
+                              : "linear-gradient(270deg, rgba(220,20,60,0.65), transparent)",
+                            marginLeft: isLeft ? 0 : "auto",
+                          }}
+                        />
+
                         {/* Signals */}
-                        <ul className="mt-2 flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1">
                           {block.signals.map((sig, j) => (
-                            <li
+                            <p
                               key={j}
-                              className="flex items-start gap-1.5 leading-tight text-white/50"
-                              style={{ fontSize: isExpanded ? "10px" : "9px" }}
+                              className="text-[9px] leading-relaxed tracking-wide"
+                              style={{ color: "rgba(255,255,255,0.42)" }}
                             >
-                              <span
-                                className="mt-[4px] shrink-0 rounded-full bg-crimson/50"
-                                style={{ width: "2px", height: "2px" }}
-                              />
                               {sig}
-                            </li>
+                            </p>
                           ))}
-                        </ul>
+                        </div>
 
                         {/* Detail */}
                         {block.detail && (
                           <p
-                            className="mt-2 leading-relaxed italic text-white/30"
-                            style={{
-                              fontSize:   isExpanded ? "9px" : "8px",
-                              borderTop:  "1px solid rgba(220,20,60,0.08)",
-                              paddingTop: "8px",
-                            }}
+                            className="mt-2 text-[8px] italic leading-relaxed tracking-wide"
+                            style={{ color: "rgba(255,255,255,0.22)" }}
                           >
                             {block.detail}
                           </p>
