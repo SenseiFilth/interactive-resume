@@ -6,6 +6,27 @@ import { motion, useScroll, useTransform } from "framer-motion";
 const CTA_URL =
   "https://www.upwork.com/services/product/design-dynamic-personal-website-interactive-animated-high-end-design-2038279724912340969?ref=project_share";
 
+const STATUS_MODULES = [
+  {
+    index: "01",
+    label: "UX & Web Design",
+    value: "Freelance — Premium digital interfaces",
+    status: "ACTIVE",
+  },
+  {
+    index: "02",
+    label: "Software + AI",
+    value: "System development & AI tooling",
+    status: "ACTIVE",
+  },
+  {
+    index: "03",
+    label: "Live Production",
+    value: "Lighting / AV / Events — 4 yrs",
+    status: "ACTIVE",
+  },
+] as const;
+
 export default function CurrentState() {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -13,9 +34,7 @@ export default function CurrentState() {
     offset: ["start end", "end start"],
   });
 
-  // Parallax: heading moves slower than scroll, button moves even slower — creates depth layers
-  const headingY = useTransform(scrollYProgress, [0, 1], [50, -50]);
-  const subtitleY = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const panelY = useTransform(scrollYProgress, [0, 1], [40, -40]);
   const buttonY = useTransform(scrollYProgress, [0, 1], [20, -20]);
 
   return (
@@ -23,62 +42,153 @@ export default function CurrentState() {
       ref={sectionRef}
       className="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-4 py-32"
     >
-      {/* Background glow */}
+      {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(220,20,60,0.04)_0%,_transparent_60%)]" />
 
-      <div className="relative z-10 mx-auto max-w-3xl text-center">
+      <div className="relative z-10 mx-auto w-full max-w-xl">
+
+        {/* Section label */}
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-xs font-mono tracking-[0.5em] text-crimson uppercase"
+          className="mb-8 font-mono text-[9px] tracking-[0.55em] text-crimson uppercase text-center"
         >
           Current State
         </motion.p>
 
-        {/* Heading with parallax depth — 3 lines on all screens */}
-        <motion.h2
-          style={{ y: headingY }}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-8 font-bold leading-tight tracking-[0.04em] text-white"
-        >
-          <span className="block text-3xl sm:text-4xl md:text-5xl">Let&rsquo;s build</span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl">something special</span>
-        </motion.h2>
+        {/* System readout panel */}
+        <motion.div style={{ y: panelY }}>
 
-        {/* Subtitle with parallax — matching hero subtitle style */}
-        <motion.p
-          style={{ y: subtitleY }}
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-6 text-xs tracking-[0.4em] text-steel uppercase sm:text-sm"
-        >
-          Premium UX Design &amp; Technical Production for Digital and Live Environments
-        </motion.p>
+          {/* Panel header bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="mb-px flex items-center justify-between px-4 py-2"
+            style={{
+              background: "rgba(220,20,60,0.06)",
+              borderTop: "1px solid rgba(220,20,60,0.25)",
+              borderLeft: "1px solid rgba(220,20,60,0.12)",
+              borderRight: "1px solid rgba(220,20,60,0.12)",
+            }}
+          >
+            <span className="font-mono text-[8px] tracking-[0.45em] text-crimson/60 uppercase">
+              System Status
+            </span>
+            <span className="flex items-center gap-1.5 font-mono text-[8px] tracking-widest text-white/25 uppercase">
+              <span
+                className="inline-block rounded-full"
+                style={{
+                  width: "5px",
+                  height: "5px",
+                  background: "rgba(74,222,128,0.85)",
+                  boxShadow: "0 0 6px rgba(74,222,128,0.6)",
+                }}
+              />
+              All systems operational
+            </span>
+          </motion.div>
 
-        {/* Divider */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mx-auto mt-10 h-[1px] w-24 origin-center bg-gradient-to-r from-transparent via-crimson/40 to-transparent"
-        />
+          {/* Status rows */}
+          <div
+            style={{
+              border: "1px solid rgba(220,20,60,0.10)",
+              borderTop: "none",
+            }}
+          >
+            {STATUS_MODULES.map((mod, i) => (
+              <motion.div
+                key={mod.index}
+                initial={{ opacity: 0, x: -8 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.12 + i * 0.1 }}
+                className="group relative flex items-center justify-between gap-4 px-4 py-4 transition-colors duration-300"
+                style={{
+                  borderBottom:
+                    i < STATUS_MODULES.length - 1
+                      ? "1px solid rgba(255,255,255,0.04)"
+                      : "none",
+                  cursor: "default",
+                }}
+              >
+                {/* Hover line accent */}
+                <div
+                  className="pointer-events-none absolute left-0 top-0 bottom-0 w-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, transparent, rgba(220,20,60,0.7), transparent)",
+                  }}
+                />
+                {/* Hover bg wash */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{ background: "rgba(220,20,60,0.03)" }} />
 
-        {/* CTA with parallax depth */}
+                {/* Left: index + label + value */}
+                <div className="relative flex items-baseline gap-3 min-w-0">
+                  <span
+                    className="shrink-0 font-mono text-[8px] tracking-[0.3em]"
+                    style={{ color: "rgba(220,20,60,0.45)" }}
+                  >
+                    {mod.index}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold tracking-[0.08em] text-white/90 leading-none mb-1">
+                      {mod.label}
+                    </p>
+                    <p className="font-mono text-[9px] tracking-wide text-white/35 leading-none">
+                      {mod.value}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: status badge */}
+                <span
+                  className="shrink-0 font-mono text-[7px] tracking-[0.35em] uppercase px-2 py-1"
+                  style={{
+                    color: "rgba(74,222,128,0.75)",
+                    border: "1px solid rgba(74,222,128,0.18)",
+                    background: "rgba(74,222,128,0.04)",
+                  }}
+                >
+                  {mod.status}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Panel footer — mission statement */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.45 }}
+            className="px-4 py-3"
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              borderLeft: "1px solid rgba(220,20,60,0.10)",
+              borderRight: "1px solid rgba(220,20,60,0.10)",
+              borderBottom: "1px solid rgba(220,20,60,0.10)",
+            }}
+          >
+            <p className="font-mono text-[9px] leading-relaxed tracking-wide text-white/28 italic">
+              Designing across digital interfaces and physical environments where systems and execution meet.
+            </p>
+          </motion.div>
+
+        </motion.div>
+
+        {/* CTA */}
         <motion.div
           style={{ y: buttonY }}
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-10"
+          transition={{ duration: 0.5, delay: 0.55 }}
+          className="mt-10 flex justify-center"
         >
           <a
             href={CTA_URL}
@@ -105,6 +215,7 @@ export default function CurrentState() {
             </svg>
           </a>
         </motion.div>
+
       </div>
     </section>
   );
