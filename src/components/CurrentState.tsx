@@ -46,9 +46,8 @@ export default function CurrentState() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mt-8 font-bold leading-tight tracking-[0.04em] text-white"
         >
-          <span className="block text-3xl sm:text-4xl md:text-5xl">Building Digital</span>
-          <span className="block text-2xl sm:text-3xl md:text-4xl font-bold text-white/40 my-1">+</span>
-          <span className="block text-3xl sm:text-4xl md:text-5xl">Physical Systems</span>
+          <span className="block text-3xl sm:text-4xl md:text-5xl">Let&rsquo;s build</span>
+          <span className="block text-3xl sm:text-4xl md:text-5xl">something special</span>
         </motion.h2>
 
         {/* Subtitle with parallax — matching hero subtitle style */}
@@ -60,7 +59,7 @@ export default function CurrentState() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-6 text-xs tracking-[0.4em] text-steel uppercase sm:text-sm"
         >
-          Freelance Development &amp; Live Production
+          Premium UX Design &amp; Technical Production for Digital and Live Environments
         </motion.p>
 
         {/* Divider */}

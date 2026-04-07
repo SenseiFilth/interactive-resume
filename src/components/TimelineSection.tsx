@@ -209,9 +209,29 @@ export default function TimelineSection() {
     // Remaining ~123vh is a "full constellation" resting phase.
     <div ref={containerRef} className="relative" style={{ height: "350vh" }}>
 
+      {/* ── Entry blend — scrolls normally, sits above sticky star field.
+          As the section top reaches the viewport top, this gradient fades
+          from transparent (hero video) into the star-field black. ── */}
+      <div
+        className="pointer-events-none absolute top-0 left-0 right-0 z-[60]"
+        style={{
+          height: "220px",
+          background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.96) 100%)",
+        }}
+      />
+
+      {/* ── Exit blend — mirrors entry at the bottom of the 350vh scroll. ── */}
+      <div
+        className="pointer-events-none absolute bottom-0 left-0 right-0 z-[60]"
+        style={{
+          height: "220px",
+          background: "linear-gradient(to top, transparent 0%, rgba(0,0,0,0.96) 100%)",
+        }}
+      />
+
       {/* Sticky viewport */}
       <div
-        className="sticky top-0 h-screen overflow-hidden bg-black"
+        className="sticky top-0 h-screen overflow-hidden bg-black/[0.92]"
         onMouseMove={handleMouseMove}
       >
         {/* ── Section label — fades as you traverse ── */}
