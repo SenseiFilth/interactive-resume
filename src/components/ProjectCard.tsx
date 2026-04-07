@@ -16,7 +16,7 @@ export default function ProjectCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
-      className="group relative overflow-hidden border border-white/[0.06] bg-white/[0.02] transition-all duration-300 hover:border-crimson/25 hover:scale-[1.015]"
+      className="group relative overflow-hidden border border-white/[0.06] bg-white/[0.02] transition-all duration-300 hover:border-crimson/25 hover:-translate-y-[3px]"
     >
       {/* Top accent */}
       <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-crimson/15 to-transparent transition-all duration-500 group-hover:via-crimson/50" />

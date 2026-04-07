@@ -27,6 +27,10 @@ interface Star {
 
 function useStarLayers() {
   return useMemo(() => {
+    // Detect mobile once at mount — halve star counts for GPU budget
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    const scale = isMobile ? 0.5 : 1;
+
     let id = 0;
     function make(
       count: number,
@@ -34,7 +38,7 @@ function useStarLayers() {
       minOp: number, maxOp: number,
       minDur: number, maxDur: number
     ): Star[] {
-      return Array.from({ length: count }, () => ({
+      return Array.from({ length: Math.round(count * scale) }, () => ({
         id: id++,
         x: Math.random() * 100,
         y: Math.random() * 100,

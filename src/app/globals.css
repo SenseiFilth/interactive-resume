@@ -109,3 +109,29 @@ body {
   background: rgba(220, 20, 60, 0.3);
   color: #fff;
 }
+
+/* ── Reduced motion — respect system preference ── */
+@media (prefers-reduced-motion: reduce) {
+  /* Kill all CSS animations and transitions */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* Keep scroll behaviour but remove smoothness */
+  html {
+    scroll-behavior: auto;
+  }
+  /* Hide ambient video entirely — static dark bg is fine */
+  video {
+    display: none;
+  }
+}
+
+/* ── Mobile scroll performance ── */
+@media (max-width: 640px) {
+  /* Promote sticky sections to their own compositor layer */
+  .sticky {
+    will-change: transform;
+  }
+}

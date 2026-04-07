@@ -64,7 +64,7 @@ export default function AmbientVideo() {
     }
 
     // ── Poll loop boundary — lightweight at 80ms intervals ───────────────
-    const interval = window.setInterval(() => {
+    const interval = window.setInterval(() => {  // 150ms — enough precision, gentler on mobile battery
       if (fadingRef.current) return;
 
       const active   = primaryRef.current === "A" ? a : b;
@@ -83,7 +83,7 @@ export default function AmbientVideo() {
           fadingRef.current = false;
         }, FADE_MS + 50);
       }
-    }, 80);
+    }, 150);
 
     return () => {
       window.clearInterval(interval);

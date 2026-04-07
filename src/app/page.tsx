@@ -75,10 +75,31 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Global footer */}
-      <footer className="relative border-t border-white/[0.04] py-12 text-center">
-        <p className="font-mono text-[10px] tracking-widest text-steel/30 uppercase">
-          &ldquo;Inside, I am infinite&rdquo; &mdash; Miyamoto Musashi
-        </p>
+      <footer className="relative border-t border-white/[0.04] py-12 px-6">
+        <div className="mx-auto max-w-4xl flex flex-col items-center gap-5">
+          {/* Contact links */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <a
+              href="mailto:brown.alexander10133@gmail.com"
+              className="font-mono text-[10px] tracking-[0.3em] text-white/20 uppercase transition-colors duration-200 hover:text-crimson/70"
+            >
+              Email
+            </a>
+            <span className="text-white/10 text-xs">·</span>
+            <a
+              href="https://www.upwork.com/services/product/design-dynamic-personal-website-interactive-animated-high-end-design-2038279724912340969?ref=project_share"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-[10px] tracking-[0.3em] text-white/20 uppercase transition-colors duration-200 hover:text-crimson/70"
+            >
+              Upwork
+            </a>
+          </div>
+          {/* Quote */}
+          <p className="font-mono text-[10px] tracking-widest text-steel/25 uppercase">
+            &ldquo;Inside, I am infinite&rdquo; &mdash; Miyamoto Musashi
+          </p>
+        </div>
       </footer>
     </>
   );

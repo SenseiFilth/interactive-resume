@@ -73,6 +73,18 @@ export default function RoleCard({
           />
 
           <div className="px-7 pt-7 pb-6 sm:px-9 sm:pt-8 sm:pb-7">
+            {/* ── Expand indicator — top right corner ── */}
+            <div className="absolute top-5 right-5 pointer-events-none">
+              <motion.span
+                animate={{ rotate: expanded ? 45 : 0 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="block font-mono text-lg leading-none select-none"
+                style={{ color: expanded ? "rgba(220,20,60,0.55)" : "rgba(255,255,255,0.15)" }}
+              >
+                +
+              </motion.span>
+            </div>
+
             {/* ── Header row ── */}
             <div className="flex flex-col items-center gap-2">
               <div className="min-w-0 flex-1 text-center">
