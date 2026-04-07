@@ -21,7 +21,6 @@ export default function RecruiterToggle({
 
   const handleClick = useCallback(
     (mode: ViewMode) => {
-      // Debounce: ignore clicks within 400ms of last
       const now = Date.now();
       if (now - lastClickRef.current < 400) return;
       if (mode === active) return;
@@ -36,17 +35,18 @@ export default function RecruiterToggle({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1.4, duration: 0.5 }}
-      className="relative inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-1"
+      className="relative inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-1 overflow-hidden"
     >
-      {/* Sliding red indicator — layoutId only on this element */}
+      {/* Sliding fill — positioned via `left` so it stays strictly within
+          the rounded container and never bleeds at the edges.
+          overflow-hidden on the parent clips any sub-pixel overshoot. */}
       <motion.div
-        layoutId="mode-pill"
         className="absolute top-1 bottom-1 rounded-full bg-crimson/90"
         style={{ width: "calc(50% - 4px)" }}
         animate={{
-          x: active === "creative" ? 4 : "calc(100% + 4px)",
+          left: active === "creative" ? "4px" : "calc(50%)",
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 28 }}
+        transition={{ type: "spring", stiffness: 320, damping: 30 }}
       />
 
       {MODES.map((mode) => (
@@ -57,7 +57,7 @@ export default function RecruiterToggle({
           style={{
             color: active === mode.key ? "#ffffff" : "#888888",
             minWidth: "140px",
-            transition: "color 0.2s ease",
+            transition: "color 0.22s ease",
           }}
         >
           {mode.label}

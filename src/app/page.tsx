@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import AmbientVideo from "@/components/AmbientVideo";
 import HeroSection from "@/components/HeroSection";
 import TimelineSection from "@/components/TimelineSection";
 import ExperienceSection from "@/components/ExperienceSection";
@@ -31,17 +32,13 @@ export default function Home() {
           solid bg. All other sections use transparent/semi-transparent
           backgrounds so this bleeds through.
       ──────────────────────────────────────────────────────────────── */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.18]"
-          style={{ filter: "saturate(1.4) brightness(0.85)" }}
-        >
-          <source src="/videos/ambient-bg.mp4" type="video/mp4" />
-        </video>
+      {/* ── Ambient video — fades out in recruiter mode, never restarts ── */}
+      <motion.div
+        className="fixed inset-0 -z-10 overflow-hidden"
+        animate={{ opacity: viewMode === "recruiter" ? 0 : 1 }}
+        transition={{ duration: 1.1, ease: [0.4, 0, 0.15, 1] }}
+      >
+        <AmbientVideo />
         {/* Deep vignette keeps edges cinematic */}
         <div
           className="absolute inset-0"
@@ -58,7 +55,7 @@ export default function Home() {
               "radial-gradient(ellipse at 50% 0%, rgba(220,20,60,0.04) 0%, transparent 60%)",
           }}
         />
-      </div>
+      </motion.div>
 
       <HeroSection viewMode={viewMode} onViewModeChange={handleViewModeChange} />
 

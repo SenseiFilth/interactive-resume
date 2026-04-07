@@ -128,7 +128,7 @@ export default function TimelineSection() {
     [0.00, 0.30, 0.38, 0.44, 0.52, 1.00],
     [0.08, 0.08, 1.00, 1.00, 0.65, 0.65]);
   const n3 = useTransform(scrollYProgress,
-    [0.00, 0.46, 0.54, 0.60, 0.68, 1.00],
+    [0.00, 0.46, 0.51, 0.57, 0.65, 1.00],
     [0.10, 0.10, 1.00, 1.00, 0.65, 0.65]);
 
   // ── Node scale ───────────────────────────────────────────────────────────
@@ -142,7 +142,7 @@ export default function TimelineSection() {
     [0.30, 0.38, 0.44, 0.52, 1.00],
     [0.45, 1.35, 1.00, 0.75, 0.75]);
   const s3 = useTransform(scrollYProgress,
-    [0.00, 0.46, 0.54, 0.62, 1.00],
+    [0.00, 0.46, 0.51, 0.59, 1.00],
     [0.45, 0.45, 1.35, 1.00, 1.00]);
 
   // ── Constellation lines ───────────────────────────────────────────────────
@@ -413,37 +413,18 @@ export default function TimelineSection() {
           className="pointer-events-none absolute inset-x-0 bottom-0 z-40"
           style={{ height: "clamp(280px, 36vh, 400px)" }}
         >
-          {/* Deep atmospheric fade — pulls text out of the star field */}
+          {/* Shallow atmospheric fade — readability without burying text */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-x-0 bottom-0"
             style={{
+              height: "55%",
               background:
-                "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, transparent 100%)",
+                "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.28) 60%, transparent 100%)",
             }}
           />
 
-          {/* Progress indicator — centered, scales with screen */}
-          <div className="absolute inset-x-0 bottom-8 sm:bottom-10 flex justify-center items-center gap-3 sm:gap-4">
-            {signalBlocks.map((_, i) => (
-              <div
-                key={i}
-                className="rounded-full transition-all duration-500"
-                style={{
-                  width:      i === mobileCard ? "7px"  : "4px",
-                  height:     i === mobileCard ? "7px"  : "4px",
-                  background: i === mobileCard
-                    ? "rgba(220,20,60,0.90)"
-                    : "rgba(255,255,255,0.15)",
-                  boxShadow:  i === mobileCard
-                    ? "0 0 8px rgba(220,20,60,0.7), 0 0 22px rgba(220,20,60,0.3)"
-                    : "none",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Content — top-anchored for consistent entry position */}
-          <div className="absolute inset-x-0 top-[36px] sm:top-[48px] flex justify-center">
+          {/* Content — vertically centered in the strip */}
+          <div className="absolute inset-0 flex items-center justify-center">
             <AnimatePresence mode="wait">
               {signalBlocks.map((block, i) =>
                 i !== mobileCard ? null : (
