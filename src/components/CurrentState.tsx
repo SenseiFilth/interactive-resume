@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const CTA_URL =
-  "https://www.upwork.com/services/product/design-dynamic-personal-website-interactive-animated-high-end-design-2038279724912340969?ref=project_share";
+  "https://www.upwork.com/freelancers/~012c48ad6ef84c61fc";
 
 const STATUS_MODULES = [
   {
