@@ -29,11 +29,9 @@ export const signalBlocks: SignalBlock[] = [
   {
     id: "deconstruct",
     index: "01",
-    title: "System Deconstruction",
+    title: "Introduction to Systems",
     signals: [
-      "Inspect element as the first tool",
-      "Reverse-engineering live websites",
-      "Breaking interfaces to see structure",
+      "Inspecting websites. Breaking interfaces. Learning that every visible thing had hidden structure beneath it.",
     ],
     detail: "Curiosity wasn't passive — it was investigative.",
     glitch: true,
