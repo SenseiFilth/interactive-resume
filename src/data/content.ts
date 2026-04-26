@@ -33,7 +33,7 @@ export const signalBlocks: SignalBlock[] = [
     signals: [
       "Inspecting websites. Breaking interfaces. Learning that every visible thing had hidden structure beneath it.",
     ],
-    detail: "Curiosity wasn't passive — it was investigative.",
+    detail: "Before I built systems, I learned how to question them.",
     glitch: true,
   },
   {
@@ -43,7 +43,7 @@ export const signalBlocks: SignalBlock[] = [
     signals: [
       "Graffiti, graphic design, clothing, and motion taught me rhythm, hierarchy, identity, and composition.",
     ],
-    detail: "Not art vs. systems — art as systems.",
+    detail: "Style became structure.",
   },
   {
     id: "realworld",
@@ -52,7 +52,7 @@ export const signalBlocks: SignalBlock[] = [
     signals: [
       "Shop floors, crews, live shows, and field work taught me timing, preparation, execution, and pressure.",
     ],
-    detail: "Every environment revealed operational structure.",
+    detail: "Execution became the test.",
   },
   {
     id: "intelligent",
@@ -61,7 +61,7 @@ export const signalBlocks: SignalBlock[] = [
     signals: [
       "AI, automation, compliance tools, and production software turned the lesson into architecture.",
     ],
-    detail: "Shift from participant → architect.",
+    detail: "What began as curiosity became a constellation of systems.",
   },
 ];
 
@@ -75,8 +75,8 @@ export const roles: Role[] = [
     tags: ["Live Production", "Crew Lead", "Lighting", "Audio", "Video"],
     details: [
       "Executed large-scale events across arena, theater, and convention environments",
-      "Led crew call coordination and real-time problem solving under live show pressure",
-      "Operated and maintained lighting systems, audio rigs, and video infrastructure",
+      "Participated in crew call coordination and real-time problem solving on-site",
+      "Built and maintained lighting systems, audio rigs, and video infrastructure",
     ],
   },
   {
@@ -100,9 +100,9 @@ export const roles: Role[] = [
     impact: "Executed technical production across corporate, theatrical, and concert events.",
     tags: ["Technical Direction", "Electronics", "Theatrical", "Concert"],
     details: [
-      "Directed electronics operations across corporate galas, concerts, and theatrical productions",
+      "Directed electronics operations across shop, corporate, concert, and theatrical productions",
       "Maintained shop organization, equipment inventory, and system reliability",
-      "Diagnosed and resolved complex electrical and control system failures on-site",
+      "Diagnosed and resolved electrical and control system failures",
     ],
   },
   {
@@ -133,10 +133,10 @@ export const projects: Project[] = [
   },
   {
     id: "truchain",
-    name: "TruChain / TruAlliance",
+    name: "TruChain",
     tagline: "Enterprise compliance & business intelligence",
     impacts: [
-      "ERP/POS with compliance integration",
+      "ERP+POS with compliance integration",
       "Real-time KPI + business intelligence",
       "Regulatory workflow optimization",
     ],
@@ -144,7 +144,7 @@ export const projects: Project[] = [
   {
     id: "portal",
     name: "Client Acquisition Portals",
-    tagline: "Premium interactive acquisition platform",
+    tagline: "Custom premium acquisition platforms",
     impacts: [
       "Interactive client acquisition system",
       "Motion-driven UX",
