@@ -110,12 +110,12 @@ export const roles: Role[] = [
 export const projects: Project[] = [
   {
     id: "cueai",
-    name: "CUE.AI",
-    tagline: "AI-powered live event production platform",
+    name: "Design Consulting System",
+    tagline: "Creative systems for brands, websites, and digital products",
     impacts: [
-      "AI-assisted show planning",
-      "Automated technical documentation",
-      "Reduced production errors & delays",
+    "AI-assisted strategy, design, and content development",
+    "Premium websites, brand assets, and motion-driven interfaces",
+    "Repeatable workflow from concept to client-ready execution",
     ],
   },
   {
