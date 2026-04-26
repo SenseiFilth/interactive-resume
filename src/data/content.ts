@@ -110,7 +110,7 @@ export const roles: Role[] = [
 export const projects: Project[] = [
   {
     id: "cueai",
-    name: "Design Consulting System",
+    name: "Creative Systems Consulting",
     tagline: "Creative systems for brands, websites, and digital products",
     impacts: [
     "AI-assisted strategy, design, and content development",
@@ -121,21 +121,21 @@ export const projects: Project[] = [
   {
     id: "truchain",
     name: "TruChain",
-    tagline: "Enterprise compliance & business intelligence",
+    tagline: "Compliance infrastructure for regulated operations",
     impacts: [
-      "ERP+POS with compliance integration",
-      "Real-time KPI + business intelligence",
-      "Regulatory workflow optimization",
+      "ERP + POS architecture with compliance-first workflows",
+      "Real-time KPI dashboards and business intelligence logic",
+      "Operational tools for inventory, sales, reporting, and traceability",
     ],
   },
   {
     id: "portal",
     name: "Client Acquisition Portals",
-    tagline: "Custom premium acquisition platforms",
+    tagline: "Premium web experiences built to turn attention into action",
     impacts: [
-      "Interactive client acquisition system",
-      "Motion-driven UX",
-      "High-conversion presentation layer",
+      "Interactive presentation systems for consultants and service brands",
+      "Motion-driven UX designed around trust, clarity, and conversion",
+      "High-end digital presence for offers, booking, and client intake",
     ],
   },
 ];
