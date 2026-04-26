@@ -105,19 +105,6 @@ export const roles: Role[] = [
       "Diagnosed and resolved electrical and control system failures",
     ],
   },
-  {
-    id: "baucoms",
-    role: "Shipping & Physical Logistics",
-    organization: "Baucom's Nursery",
-    timeframe: "2018–2019",
-    impact: "Built operational discipline through high-volume physical systems under demanding conditions.",
-    tags: ["Logistics", "Operations", "Physical Systems"],
-    details: [
-      "Managed inbound shipping containers and inventory staging",
-      "Operated under tight seasonal deadlines with zero tolerance for delays",
-      "Developed systems-level thinking through repetition and high-volume output",
-    ],
-  },
 ];
 
 export const projects: Project[] = [
