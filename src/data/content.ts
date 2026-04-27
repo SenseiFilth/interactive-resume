@@ -120,12 +120,12 @@ export const projects: Project[] = [
   },
   {
     id: "truchain",
-    name: "TruChain",
-    tagline: "Compliance infrastructure for regulated operations",
+    name: "Operational Software Systems",
+    tagline: "Custom tools for workflows, dashboards, compliance, and business intelligence",
     impacts: [
-      "ERP + POS architecture with compliance-first workflows",
-      "Real-time KPI dashboards and business intelligence logic",
-      "Operational tools for inventory, sales, reporting, and traceability",
+      "Internal dashboards, admin panels, and workflow interfaces",
+      "ERP, POS, inventory, compliance, and reporting logic",
+      "Software designed around how your business operates",
     ],
   },
   {
